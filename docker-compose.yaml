@@ -1,0 +1,118 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgis/postgis:15-3.4
+    container_name: taxi_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - taxi-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: taxi_redis
+    restart: always
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - taxi-net
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: taxi_rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RMQ_PASSWORD}
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbitmq_management load_definitions \"/etc/rabbitmq/rabbitmq_config.json\""
+    ports:
+      - "${RMQ_PORT}:5672"
+      - "${RMQ_UI_PORT}:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq_config.json:/etc/rabbitmq/rabbitmq_config.json:ro
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - taxi-net
+
+  minio:
+    image: minio/minio:latest
+    container_name: taxi_minio
+    restart: always
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+    ports:
+      - "${MINIO_PORT}:9000"
+      - "${MINIO_UI_PORT}:9001"
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - taxi-net
+
+  minio-setup:
+    image: minio/mc:latest
+    container_name: taxi_minio_setup
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_USER} ${MINIO_PASSWORD};
+      /usr/bin/mc mb myminio/avatars --ignore-existing;
+      /usr/bin/mc anonymous set public myminio/avatars;
+      exit 0;
+      "
+    networks:
+      - taxi-net
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: taxi_mailpit
+    restart: always
+    ports:
+      - "${SMTP_PORT}:1025"
+      - "${MAILPIT_UI_PORT}:8025"
+    networks:
+      - taxi-net
+
+networks:
+  taxi-net:
+    driver: bridge
+
+volumes:
+  pgdata:
+  redisdata:
+  rabbitmq_data:
+  miniodata:
