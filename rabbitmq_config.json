@@ -1,0 +1,155 @@
+{
+  "rabbit_version": "3.12",
+  "users": [
+    {
+      "name": "admin",
+      "password": "super_secret_rmq_password",
+      "tags": "administrator"
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "trip.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "user.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "location.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "matching.find_driver",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "notification.push",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "billing.process_payment",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "rating.ask_review",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "notification.welcome",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "history.save_track",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "trip.events",
+      "vhost": "/",
+      "destination": "matching.find_driver",
+      "destination_type": "queue",
+      "routing_key": "trip.created",
+      "arguments": {}
+    },
+    {
+      "source": "trip.events",
+      "vhost": "/",
+      "destination": "notification.push",
+      "destination_type": "queue",
+      "routing_key": "trip.status.changed",
+      "arguments": {}
+    },
+    {
+      "source": "trip.events",
+      "vhost": "/",
+      "destination": "billing.process_payment",
+      "destination_type": "queue",
+      "routing_key": "trip.completed",
+      "arguments": {}
+    },
+    {
+      "source": "trip.events",
+      "vhost": "/",
+      "destination": "rating.ask_review",
+      "destination_type": "queue",
+      "routing_key": "trip.completed",
+      "arguments": {}
+    },
+    {
+      "source": "user.events",
+      "vhost": "/",
+      "destination": "notification.welcome",
+      "destination_type": "queue",
+      "routing_key": "user.registered",
+      "arguments": {}
+    },
+    {
+      "source": "user.events",
+      "vhost": "/",
+      "destination": "notification.push",
+      "destination_type": "queue",
+      "routing_key": "user.driver_approved",
+      "arguments": {}
+    },
+    {
+      "source": "location.events",
+      "vhost": "/",
+      "destination": "history.save_track",
+      "destination_type": "queue",
+      "routing_key": "location.trip_track",
+      "arguments": {}
+    }
+  ],
+  "permissions": [
+    {
+      "user": "admin",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ]
+}
