@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"log/slog"
 	pb "online_taxi/gen/auth-service"
 	"online_taxi/services/auth-service/internal/app/usecase"
 
@@ -35,7 +36,8 @@ func (h *Handler) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.Au
 
 	res, err := h.service.CreateUser(ctx, dto)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "ошибка регистрации: %v", err)
+		slog.Error("error", err)
+		return nil, status.Errorf(codes.Internal, "ошибка регистрации: %v", err) // TODO: I need to refactor this. I'll create a function that validates the issue and returns a specific error
 	}
 
 	return &pb.AuthResponse{
