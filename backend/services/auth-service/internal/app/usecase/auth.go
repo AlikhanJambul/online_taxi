@@ -47,6 +47,8 @@ func (s *service) CreateUser(ctx context.Context, dto *RegisterRequest) (*AuthRe
 		return nil, err
 	}
 
+	//tokens.RefreshToken
+
 	response := AuthResponse{
 		AccessToken:  tokens.AccessToken,
 		RefreshToken: tokens.RefreshToken,
