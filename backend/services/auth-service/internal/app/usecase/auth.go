@@ -6,11 +6,14 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"online_taxi/services/auth-service/internal/adapters/postgres"
 	"online_taxi/services/auth-service/internal/domain"
-	"online_taxi/services/auth-service/jwt"
+	"online_taxi/services/auth-service/internal/jwt"
 )
 
+var instance string = "service:"
+
 type Service interface {
-	CreateUser(ctx context.Context, dto *RegisterRequest) (*AuthResponse, error)
+	CreateUser(ctx context.Context, dto *RegisterRequestDTO) (*AuthResponseDTO, error)
+	SaveSession(ctx context.Context, dto *LoginRequestDTO) (*AuthResponseDTO, error)
 }
 
 type service struct {
@@ -22,7 +25,7 @@ func NewService(repo postgres.Repository, tm *jwt.TokenManager) Service {
 	return &service{repo: repo, tm: tm}
 }
 
-func (s *service) CreateUser(ctx context.Context, dto *RegisterRequest) (*AuthResponse, error) {
+func (s *service) CreateUser(ctx context.Context, dto *RegisterRequestDTO) (*AuthResponseDTO, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(dto.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -47,9 +50,7 @@ func (s *service) CreateUser(ctx context.Context, dto *RegisterRequest) (*AuthRe
 		return nil, err
 	}
 
-	//tokens.RefreshToken
-
-	response := AuthResponse{
+	response := AuthResponseDTO{
 		AccessToken:  tokens.AccessToken,
 		RefreshToken: tokens.RefreshToken,
 		UserID:       uID.String(),
@@ -57,4 +58,31 @@ func (s *service) CreateUser(ctx context.Context, dto *RegisterRequest) (*AuthRe
 	}
 
 	return &response, nil
+}
+
+func (s *service) SaveSession(ctx context.Context, dto *LoginRequestDTO) (*AuthResponseDTO, error) {
+	user, err := s.repo.GetUserByEmail(ctx, dto.Email)
+	if err != nil {
+		return nil, domain.ErrInvalidEmailOrPassword
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(dto.Password))
+	if err != nil {
+		return nil, domain.ErrInvalidEmailOrPassword // TODO: custom
+	}
+
+	tokens, err := s.tm.GenerateTokenPair(user.ID.String(), user.Role)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.repo.SaveSession(ctx, user.ID.String(), tokens.RefreshToken, dto.DeviceID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &AuthResponseDTO{
+		RefreshToken: tokens.RefreshToken,
+		AccessToken:  tokens.AccessToken,
+	}, nil
 }

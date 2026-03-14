@@ -3,6 +3,8 @@ package app
 import (
 	"log"
 	"net"
+	"online_taxi/services/auth-service/internal/jwt"
+	"online_taxi/services/pkg/logger"
 
 	"google.golang.org/grpc"
 
@@ -11,13 +13,13 @@ import (
 	"online_taxi/services/auth-service/internal/adapters/postgres"
 	"online_taxi/services/auth-service/internal/app/usecase"
 	grpcHandler "online_taxi/services/auth-service/internal/transport/grpc"
-	"online_taxi/services/auth-service/jwt"
 	"online_taxi/services/pkg/config"
 	"online_taxi/services/pkg/database"
 )
 
 func Run() {
 	cfg := config.Load()
+	newLogger := logger.New("Auth-service")
 
 	db, err := database.ConnectToDB(&cfg.DB)
 	if err != nil {
@@ -29,7 +31,7 @@ func Run() {
 	repo := postgres.NewRepository(db)
 	service := usecase.NewService(repo, tm)
 
-	h := grpcHandler.NewHandler(service)
+	h := grpcHandler.NewHandler(service, newLogger)
 
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
