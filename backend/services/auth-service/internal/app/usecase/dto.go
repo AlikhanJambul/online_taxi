@@ -9,7 +9,7 @@ const (
 	RoleUnspecified Role = "ROLE_UNSPECIFIED"
 )
 
-type RegisterRequest struct {
+type RegisterRequestDTO struct {
 	Phone    string
 	Password string
 	FullName string
@@ -18,31 +18,31 @@ type RegisterRequest struct {
 	DeviceID string
 }
 
-type LoginRequest struct {
-	Phone    string
+type LoginRequestDTO struct {
+	Email    string
 	Password string
 	DeviceID string
 }
 
-type RefreshRequest struct {
+type RefreshRequestDTO struct {
 	RefreshToken string
 	DeviceID     string
 }
 
-type LogoutRequest struct {
+type LogoutRequestDTO struct {
 	RefreshToken string
 }
 
 // RESPONSE
 
-type AuthResponse struct {
+type AuthResponseDTO struct {
 	AccessToken  string
 	RefreshToken string
 	UserID       string
 	Role         string
 }
 
-type RefreshResponse struct {
+type RefreshResponseDTO struct {
 	AccessToken  string
 	RefreshToken string
 }

@@ -160,7 +160,7 @@ func (x *RegisterRequest) GetDeviceId() string {
 
 type LoginRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Phone         string                 `protobuf:"bytes,1,opt,name=phone,proto3" json:"phone,omitempty"`
+	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
 	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
 	DeviceId      string                 `protobuf:"bytes,3,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -197,9 +197,9 @@ func (*LoginRequest) Descriptor() ([]byte, []int) {
 	return file_auth_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *LoginRequest) GetPhone() string {
+func (x *LoginRequest) GetEmail() string {
 	if x != nil {
-		return x.Phone
+		return x.Email
 	}
 	return ""
 }
@@ -449,7 +449,7 @@ const file_auth_proto_rawDesc = "" +
 	".auth.RoleR\x04role\x12\x1b\n" +
 	"\tdevice_id\x18\x06 \x01(\tR\bdeviceId\"]\n" +
 	"\fLoginRequest\x12\x14\n" +
-	"\x05phone\x18\x01 \x01(\tR\x05phone\x12\x1a\n" +
+	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x1b\n" +
 	"\tdevice_id\x18\x03 \x01(\tR\bdeviceId\"\x8f\x01\n" +
 	"\fAuthResponse\x12!\n" +
