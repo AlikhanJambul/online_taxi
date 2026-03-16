@@ -23,3 +23,16 @@ func toLogInDTO(req *pb.LoginRequest) *usecase.LoginRequestDTO {
 		DeviceID: req.GetDeviceId(),
 	}
 }
+
+func toLogOutDTO(req *pb.LogoutRequest) *usecase.LogoutRequestDTO {
+	return &usecase.LogoutRequestDTO{
+		RefreshToken: req.RefreshToken,
+	}
+}
+
+func toRefreshDTO(req *pb.RefreshRequest) *usecase.RefreshRequestDTO {
+	return &usecase.RefreshRequestDTO{
+		RefreshToken: req.RefreshToken,
+		DeviceID:     req.DeviceId,
+	}
+}

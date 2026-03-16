@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 	"online_taxi/services/auth-service/internal/jwt"
+	"online_taxi/services/auth-service/internal/transport/grpc/interceptors"
 	"online_taxi/services/pkg/logger"
 
 	"google.golang.org/grpc"
@@ -38,7 +39,7 @@ func Run() {
 		log.Fatalf("Не удалось прослушать порт: %v", err)
 	}
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(interceptors.AuthInterceptor(tm)))
 
 	pb.RegisterAuthServiceServer(grpcServer, h)
 

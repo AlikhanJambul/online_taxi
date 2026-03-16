@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"errors"
+	"google.golang.org/protobuf/types/known/emptypb"
 	pb "online_taxi/gen/auth-service"
 	"online_taxi/services/auth-service/internal/app/usecase"
 	"online_taxi/services/auth-service/internal/domain"
@@ -68,6 +69,51 @@ func (h *Handler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.AuthResp
 		RefreshToken: res.RefreshToken,
 		UserId:       res.UserID,
 		Role:         parseRole(res.Role),
+	}, nil
+}
+
+func (h *Handler) Logout(ctx context.Context, req *pb.LogoutRequest) (*emptypb.Empty, error) {
+	if req.GetRefreshToken() == "" {
+		return nil, status.Error(codes.InvalidArgument, "токен пустой")
+	}
+
+	dto := toLogOutDTO(req)
+
+	err := h.service.ClearSession(ctx, dto)
+	if err != nil {
+		h.logger.Error("ошибка удаления refresh token: %v", err)
+
+		if errors.Is(err, domain.ErrNilToken) {
+			return nil, status.Error(codes.Unauthenticated, err.Error())
+		}
+
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &emptypb.Empty{}, nil
+}
+
+func (h *Handler) Refresh(ctx context.Context, req *pb.RefreshRequest) (*pb.RefreshResponse, error) {
+	if req.GetRefreshToken() == "" || req.GetDeviceId() == "" {
+		return nil, status.Error(codes.InvalidArgument, "token and device id are required")
+	}
+
+	dto := toRefreshDTO(req)
+
+	resp, err := h.service.RefreshToken(ctx, dto)
+	if err != nil {
+		h.logger.Error("ошибка генерации нового токена: %v", err)
+
+		if errors.Is(err, domain.ErrUserNotFound) {
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
+
+		return nil, status.Error(codes.Internal, domain.ErrInternalError.Error())
+	}
+
+	return &pb.RefreshResponse{
+		RefreshToken: resp.RefreshToken,
+		AccessToken:  resp.AccessToken,
 	}, nil
 }
 
