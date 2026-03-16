@@ -74,3 +74,23 @@ func (tm *TokenManager) GenerateRefreshToken() (string, error) {
 
 	return base64.URLEncoding.EncodeToString(b), nil
 }
+
+// ParseToken парсит токен
+func (tm *TokenManager) ParseToken(tokenString string) (*Claims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("неожиданный метод подписи: %v", token.Header["alg"])
+		}
+		return tm.secretKey, nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("ошибка валидации токена: %w", err)
+	}
+
+	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
+		return claims, nil
+	}
+
+	return nil, fmt.Errorf("невалидный токен")
+}

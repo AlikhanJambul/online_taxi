@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
-	"online_taxi/services/auth-service/internal/adapters/postgres"
 	"online_taxi/services/auth-service/internal/domain"
 	"online_taxi/services/auth-service/internal/jwt"
 )
@@ -14,14 +13,16 @@ var instance string = "service:"
 type Service interface {
 	CreateUser(ctx context.Context, dto *RegisterRequestDTO) (*AuthResponseDTO, error)
 	SaveSession(ctx context.Context, dto *LoginRequestDTO) (*AuthResponseDTO, error)
+	ClearSession(ctx context.Context, dto *LogoutRequestDTO) error
+	RefreshToken(ctx context.Context, dto *RefreshRequestDTO) (*RefreshResponseDTO, error)
 }
 
 type service struct {
-	repo postgres.Repository
+	repo domain.Repository
 	tm   *jwt.TokenManager
 }
 
-func NewService(repo postgres.Repository, tm *jwt.TokenManager) Service {
+func NewService(repo domain.Repository, tm *jwt.TokenManager) Service {
 	return &service{repo: repo, tm: tm}
 }
 
@@ -84,5 +85,34 @@ func (s *service) SaveSession(ctx context.Context, dto *LoginRequestDTO) (*AuthR
 	return &AuthResponseDTO{
 		RefreshToken: tokens.RefreshToken,
 		AccessToken:  tokens.AccessToken,
+		UserID:       user.ID.String(),
+		Role:         user.Role,
 	}, nil
+}
+
+func (s *service) ClearSession(ctx context.Context, dto *LogoutRequestDTO) error {
+	return s.repo.ClearSession(ctx, dto.RefreshToken)
+}
+
+func (s *service) RefreshToken(ctx context.Context, dto *RefreshRequestDTO) (*RefreshResponseDTO, error) {
+	user, err := s.repo.GetUserByDeviceID(ctx, dto.DeviceID) // TODO: Give the function a refresh token
+	if err != nil {
+		return nil, err
+	}
+
+	tokens, err := s.tm.GenerateTokenPair(user.ID.String(), user.Role)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.repo.SaveRefreshToken(ctx, tokens.RefreshToken, dto.DeviceID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &RefreshResponseDTO{
+		RefreshToken: tokens.RefreshToken,
+		AccessToken:  tokens.AccessToken,
+	}, nil
+
 }
