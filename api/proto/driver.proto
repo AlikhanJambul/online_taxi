@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package driver;
+
+option go_package = "gen/driver-service";
+
+import "google/protobuf/empty.proto";
+
+service DriverService {
+  rpc CreateProfile (CreateProfileRequest) returns (DriverProfileResponse);
+
+  rpc GetProfile (google.protobuf.Empty) returns (DriverProfileResponse);
+}
+
+enum DriverStatus {
+  STATUS_UNSPECIFIED = 0;
+  PENDING = 1;
+  APPROVED = 2;
+  REJECTED = 3;
+}
+
+message CreateProfileRequest {
+  string car_make = 1;
+  string car_model = 2;
+  string car_color = 3;
+  string license_plate = 4;
+}
+
+message DriverProfileResponse {
+  string user_id = 1;
+  string car_make = 2;
+  string car_model = 3;
+  string car_color = 4;
+  string license_plate = 5;
+  DriverStatus status = 6;
+}

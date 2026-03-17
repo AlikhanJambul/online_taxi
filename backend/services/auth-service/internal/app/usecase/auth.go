@@ -5,7 +5,7 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"online_taxi/services/auth-service/internal/domain"
-	"online_taxi/services/auth-service/internal/jwt"
+	"online_taxi/services/pkg/jwt"
 )
 
 var instance string = "service:"

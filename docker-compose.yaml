@@ -128,6 +128,27 @@ services:
     networks:
       - taxi-net
 
+  driver-service:
+    build:
+      context: ./backend
+      dockerfile: ./services/driver-service/Dockerfile
+    container_name: taxi_driver_service
+    restart: on-failure
+    ports:
+      - "50052:50052"
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=postgres
+      - REDIS_HOST=redis
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - taxi-net
+
 networks:
   taxi-net:
     driver: bridge
