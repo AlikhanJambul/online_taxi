@@ -8,6 +8,7 @@ import (
 	"online_taxi/services/auth-service/internal/app/usecase"
 	"online_taxi/services/auth-service/internal/domain"
 	loggerPkg "online_taxi/services/pkg/logger"
+	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -24,6 +25,10 @@ func NewHandler(s usecase.Service, logger *loggerPkg.Logger) *Handler {
 }
 
 func (h *Handler) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.AuthResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+
+	defer cancel()
+
 	if req.GetPhone() == "" || req.GetPassword() == "" {
 		return nil, status.Error(codes.InvalidArgument, "телефон и пароль обязательны")
 	}
@@ -45,6 +50,10 @@ func (h *Handler) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.Au
 }
 
 func (h *Handler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.AuthResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+
+	defer cancel()
+
 	if req.GetEmail() == "" || req.GetPassword() == "" {
 		return nil, status.Error(codes.InvalidArgument, "почта и пароль обязательны")
 	}
@@ -73,6 +82,10 @@ func (h *Handler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.AuthResp
 }
 
 func (h *Handler) Logout(ctx context.Context, req *pb.LogoutRequest) (*emptypb.Empty, error) {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+
+	defer cancel()
+
 	if req.GetRefreshToken() == "" {
 		return nil, status.Error(codes.InvalidArgument, "токен пустой")
 	}
@@ -94,6 +107,10 @@ func (h *Handler) Logout(ctx context.Context, req *pb.LogoutRequest) (*emptypb.E
 }
 
 func (h *Handler) Refresh(ctx context.Context, req *pb.RefreshRequest) (*pb.RefreshResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+
+	defer cancel()
+
 	if req.GetRefreshToken() == "" || req.GetDeviceId() == "" {
 		return nil, status.Error(codes.InvalidArgument, "token and device id are required")
 	}

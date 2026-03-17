@@ -2,7 +2,6 @@ package interceptors
 
 import (
 	"context"
-	"online_taxi/services/pkg/jwt"
 	"strings"
 	"time"
 
@@ -10,9 +9,11 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+
+	"online_taxi/services/pkg/jwt"
 )
 
-func AuthInterceptor(tm *jwt.TokenManager) grpc.UnaryServerInterceptor {
+func DriverInterceptor(tm *jwt.TokenManager) grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
 		req interface{},
@@ -20,11 +21,10 @@ func AuthInterceptor(tm *jwt.TokenManager) grpc.UnaryServerInterceptor {
 		handler grpc.UnaryHandler,
 	) (interface{}, error) {
 
-		if info.FullMethod == "/auth.AuthService/Login" ||
-			info.FullMethod == "/auth.AuthService/Register" ||
-			info.FullMethod == "/auth.AuthService/Refresh" {
-			return handler(ctx, req)
-		}
+		//if info.FullMethod == "/driver.DriverService/CreateProfile" ||
+		//	info.FullMethod == "/driver.DriverService/GetProfile" {
+		//	return handler(ctx, req)
+		//}
 
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
@@ -60,7 +60,7 @@ func TimeoutInterceptor(timeout time.Duration) grpc.UnaryServerInterceptor {
 	) (interface{}, error) {
 
 		ctx, cancel := context.WithTimeout(ctx, timeout)
-		defer cancel() // Как только хендлер отработает, ресурсы освободятся
+		defer cancel()
 
 		return handler(ctx, req)
 	}
