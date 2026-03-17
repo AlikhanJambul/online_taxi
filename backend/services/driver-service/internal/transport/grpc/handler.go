@@ -10,7 +10,6 @@ import (
 	"online_taxi/services/driver-service/internal/app/usecase"
 	"online_taxi/services/driver-service/internal/domain"
 	loggerPkg "online_taxi/services/pkg/logger"
-	"time"
 )
 
 type Handler struct {
@@ -28,10 +27,6 @@ func NewHandler(service usecase.Service, logger *loggerPkg.Logger) *Handler {
 
 func (h *Handler) CreateProfile(ctx context.Context, req *pb.CreateProfileRequest) (*pb.DriverProfileResponse, error) {
 	dto := toCreateDTO(req)
-
-	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
-
-	defer cancel()
 
 	resp, err := h.service.CreateDriver(ctx, dto)
 	if err != nil {
@@ -51,10 +46,6 @@ func (h *Handler) CreateProfile(ctx context.Context, req *pb.CreateProfileReques
 }
 
 func (h *Handler) GetProfile(ctx context.Context, req *emptypb.Empty) (*pb.DriverProfileResponse, error) {
-	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
-
-	defer cancel()
-
 	resp, err := h.service.GetDriver(ctx)
 	if err != nil {
 		h.logger.Error("ошибка получения профиля: %v", err)
