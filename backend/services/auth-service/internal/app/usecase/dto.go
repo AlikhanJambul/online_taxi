@@ -33,6 +33,12 @@ type LogoutRequestDTO struct {
 	RefreshToken string
 }
 
+type UpdateFCMRequestDTO struct {
+	UserID   string
+	DeviceID string
+	FCMToken string
+}
+
 // RESPONSE
 
 type AuthResponseDTO struct {

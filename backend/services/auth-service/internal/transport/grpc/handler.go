@@ -119,6 +119,31 @@ func (h *Handler) Refresh(ctx context.Context, req *pb.RefreshRequest) (*pb.Refr
 	}, nil
 }
 
+func (h *Handler) UpdateFCMToken(ctx context.Context, req *pb.UpdateFCMRequest) (*emptypb.Empty, error) {
+	userID, ok := ctx.Value("userID").(string)
+	if !ok || userID == "" {
+		return nil, status.Error(codes.Internal, domain.ErrInternalError.Error())
+	}
+
+	dto := toUpdateFCMDTO(req)
+
+	dto.UserID = userID
+
+	err := h.service.UpdateFCMToken(ctx, dto)
+	if err != nil {
+
+		if errors.Is(err, domain.ErrInvalidData) {
+			h.logger.Warn("пользователь %s: ошибка с обновлением fcm_token: %v", dto.UserID, err)
+			return nil, status.Error(codes.Internal, domain.ErrInternalError.Error())
+		}
+
+		h.logger.Error("пользователь %s: критическая ошибка обновления fcm token: %v", dto.UserID, err)
+		return nil, status.Error(codes.Internal, domain.ErrInternalError.Error())
+	}
+
+	return nil, nil
+}
+
 func parseRole(role string) pb.Role {
 	switch role {
 	case "PASSENGER":

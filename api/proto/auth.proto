@@ -11,6 +11,7 @@ service AuthService {
   rpc Login (LoginRequest) returns (AuthResponse);
   rpc Refresh (RefreshRequest) returns (RefreshResponse);
   rpc Logout (LogoutRequest) returns (google.protobuf.Empty);
+  rpc UpdateFCMToken (UpdateFCMRequest) returns (google.protobuf.Empty);
 }
 
 enum Role {
@@ -33,6 +34,11 @@ message LoginRequest {
   string email = 1;
   string password = 2;
   string device_id = 3;
+}
+
+message UpdateFCMRequest {
+  string device_id = 1;
+  string fcm_token = 2;
 }
 
 message AuthResponse {

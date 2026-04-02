@@ -36,3 +36,10 @@ func toRefreshDTO(req *pb.RefreshRequest) usecase.RefreshRequestDTO {
 		DeviceID:     req.DeviceId,
 	}
 }
+
+func toUpdateFCMDTO(req *pb.UpdateFCMRequest) usecase.UpdateFCMRequestDTO {
+	return usecase.UpdateFCMRequestDTO{
+		FCMToken: req.FcmToken,
+		DeviceID: req.DeviceId,
+	}
+}
