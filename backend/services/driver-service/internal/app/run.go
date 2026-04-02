@@ -9,10 +9,10 @@ import (
 	"online_taxi/services/driver-service/internal/app/usecase"
 	grpcHandler "online_taxi/services/driver-service/internal/transport/grpc"
 	"online_taxi/services/driver-service/internal/transport/grpc/interceptors"
-	"online_taxi/services/pkg/config"
-	"online_taxi/services/pkg/database"
-	"online_taxi/services/pkg/jwt"
-	"online_taxi/services/pkg/logger"
+	"online_taxi/services/shared/config"
+	"online_taxi/services/shared/database"
+	"online_taxi/services/shared/jwt"
+	"online_taxi/services/shared/logger"
 	"time"
 )
 

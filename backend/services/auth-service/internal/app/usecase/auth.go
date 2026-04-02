@@ -5,16 +5,16 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"online_taxi/services/auth-service/internal/domain"
-	"online_taxi/services/pkg/jwt"
+	"online_taxi/services/shared/jwt"
 )
 
 var instance string = "service:"
 
 type Service interface {
-	CreateUser(ctx context.Context, dto *RegisterRequestDTO) (*AuthResponseDTO, error)
-	SaveSession(ctx context.Context, dto *LoginRequestDTO) (*AuthResponseDTO, error)
-	ClearSession(ctx context.Context, dto *LogoutRequestDTO) error
-	RefreshToken(ctx context.Context, dto *RefreshRequestDTO) (*RefreshResponseDTO, error)
+	CreateUser(ctx context.Context, dto RegisterRequestDTO) (*AuthResponseDTO, error)
+	SaveSession(ctx context.Context, dto LoginRequestDTO) (*AuthResponseDTO, error)
+	ClearSession(ctx context.Context, dto LogoutRequestDTO) error
+	RefreshToken(ctx context.Context, dto RefreshRequestDTO) (*RefreshResponseDTO, error)
 }
 
 type service struct {
@@ -26,7 +26,7 @@ func NewService(repo domain.Repository, tm *jwt.TokenManager) Service {
 	return &service{repo: repo, tm: tm}
 }
 
-func (s *service) CreateUser(ctx context.Context, dto *RegisterRequestDTO) (*AuthResponseDTO, error) {
+func (s *service) CreateUser(ctx context.Context, dto RegisterRequestDTO) (*AuthResponseDTO, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(dto.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func (s *service) CreateUser(ctx context.Context, dto *RegisterRequestDTO) (*Aut
 	return &response, nil
 }
 
-func (s *service) SaveSession(ctx context.Context, dto *LoginRequestDTO) (*AuthResponseDTO, error) {
+func (s *service) SaveSession(ctx context.Context, dto LoginRequestDTO) (*AuthResponseDTO, error) {
 	user, err := s.repo.GetUserByEmail(ctx, dto.Email)
 	if err != nil {
 		return nil, domain.ErrInvalidEmailOrPassword
@@ -90,11 +90,11 @@ func (s *service) SaveSession(ctx context.Context, dto *LoginRequestDTO) (*AuthR
 	}, nil
 }
 
-func (s *service) ClearSession(ctx context.Context, dto *LogoutRequestDTO) error {
+func (s *service) ClearSession(ctx context.Context, dto LogoutRequestDTO) error {
 	return s.repo.ClearSession(ctx, dto.RefreshToken)
 }
 
-func (s *service) RefreshToken(ctx context.Context, dto *RefreshRequestDTO) (*RefreshResponseDTO, error) {
+func (s *service) RefreshToken(ctx context.Context, dto RefreshRequestDTO) (*RefreshResponseDTO, error) {
 	user, err := s.repo.GetUserByDeviceID(ctx, dto.DeviceID) // TODO: Give the function a refresh token
 	if err != nil {
 		return nil, err

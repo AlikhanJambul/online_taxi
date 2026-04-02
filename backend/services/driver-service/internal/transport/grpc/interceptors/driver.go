@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
-	"online_taxi/services/pkg/jwt"
+	"online_taxi/services/shared/jwt"
 )
 
 func DriverInterceptor(tm *jwt.TokenManager) grpc.UnaryServerInterceptor {

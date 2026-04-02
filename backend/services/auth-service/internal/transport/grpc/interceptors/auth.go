@@ -2,7 +2,7 @@ package interceptors
 
 import (
 	"context"
-	"online_taxi/services/pkg/jwt"
+	"online_taxi/services/shared/jwt"
 	"strings"
 	"time"
 

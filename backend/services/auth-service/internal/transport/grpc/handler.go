@@ -9,7 +9,7 @@ import (
 	pb "online_taxi/gen/auth-service"
 	"online_taxi/services/auth-service/internal/app/usecase"
 	"online_taxi/services/auth-service/internal/domain"
-	loggerPkg "online_taxi/services/pkg/logger"
+	loggerPkg "online_taxi/services/shared/logger"
 )
 
 type Handler struct {
@@ -52,13 +52,14 @@ func (h *Handler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.AuthResp
 
 	res, err := h.service.SaveSession(ctx, dto)
 	if err != nil {
-		h.logger.Error("ошибка при входе: %v", err)
 
 		if errors.Is(err, domain.ErrInvalidEmailOrPassword) {
+			h.logger.Warn("проблема со входом: %v", err)
 			return nil, status.Errorf(codes.Unauthenticated, domain.ErrInvalidEmailOrPassword.Error())
 
 		}
 
+		h.logger.Error("ошибка при входе: %v", err)
 		return nil, status.Error(codes.Internal, domain.ErrInternalError.Error())
 
 	}
@@ -80,12 +81,13 @@ func (h *Handler) Logout(ctx context.Context, req *pb.LogoutRequest) (*emptypb.E
 
 	err := h.service.ClearSession(ctx, dto)
 	if err != nil {
-		h.logger.Error("ошибка удаления refresh token: %v", err)
 
 		if errors.Is(err, domain.ErrNilToken) {
+			h.logger.Warn("ошибка при удалении токена: %v")
 			return nil, status.Error(codes.Unauthenticated, err.Error())
 		}
 
+		h.logger.Error("ошибка удаления refresh token: %v", err)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -101,12 +103,13 @@ func (h *Handler) Refresh(ctx context.Context, req *pb.RefreshRequest) (*pb.Refr
 
 	resp, err := h.service.RefreshToken(ctx, dto)
 	if err != nil {
-		h.logger.Error("ошибка генерации нового токена: %v", err)
 
 		if errors.Is(err, domain.ErrUserNotFound) {
+			h.logger.Warn("ошибка обновления токена: %v", err)
 			return nil, status.Error(codes.NotFound, err.Error())
 		}
 
+		h.logger.Error("ошибка генерации нового токена: %v", err)
 		return nil, status.Error(codes.Internal, domain.ErrInternalError.Error())
 	}
 

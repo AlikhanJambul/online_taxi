@@ -1,7 +1,7 @@
 package config
 
 import (
-	"online_taxi/services/pkg/models"
+	"online_taxi/services/shared/models"
 	"os"
 )
 

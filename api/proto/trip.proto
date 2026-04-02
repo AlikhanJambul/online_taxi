@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package trip;
+
+option go_package = "gen/trip-service";
+
+import "google/protobuf/empty.proto";
+
+service TripService {
+
+  // 1. Пассажир создает заявку (ищет машину)
+  rpc CreateTrip (CreateTripRequest) returns (TripResponse);
+
+  // 2. Водитель принимает заказ
+  rpc AcceptTrip (AcceptTripRequest) returns (TripResponse);
+
+  // 3. Получить инфу по конкретной поездке
+  rpc GetTrip (GetTripRequest) returns (TripResponse);
+
+
+  // --- Реалтайм (Стриминг) ---
+
+  // 4. Водитель постоянно шлет свои координаты (Client Streaming)
+  // Ключевое слово stream в запросе значит, что клиент открывает трубу и пуляет данные
+  rpc SendLocation (stream LocationRequest) returns (google.protobuf.Empty);
+
+  // 5. Пассажир слушает перемещения водителя (Server Streaming)
+  // Ключевое слово stream в ответе значит, что сервер постоянно отдает данные клиенту
+  rpc TrackTrip (TrackRequest) returns (stream LocationResponse);
+}
+
+enum TripStatus {
+  STATUS_UNSPECIFIED = 0;
+  SEARCHING = 1;
+  ACCEPTED = 2;
+  ARRIVED = 3;
+  IN_PROGRESS = 4;
+  COMPLETED = 5;
+  CANCELLED = 6;
+}
+
+message CreateTripRequest {
+  string pickup_address = 1;
+  string dest_address = 2;
+  double pickup_lat = 3;
+  double pickup_lng = 4;
+  double dest_lat = 5;
+  double dest_lng = 6;
+  int64 price_kzt = 7;
+}
+
+message AcceptTripRequest {
+  string trip_id = 1;
+}
+
+message GetTripRequest {
+  string trip_id = 1;
+}
+
+message TripResponse {
+  string trip_id = 1;
+  string passenger_id = 2;
+  string driver_id = 3;
+  TripStatus status = 4;
+  string pickup_address = 5;
+  string dest_address = 6;
+  double pickup_lat = 7;
+  double pickup_lng = 8;
+  double dest_lat = 9;
+  double dest_lng = 10;
+  int64 price_kzt = 11;
+}
+
+message LocationRequest {
+  string trip_id = 1;
+  double lat = 2;
+  double lng = 3;
+}
+
+message TrackRequest {
+  string trip_id = 1;
+}
+
+message LocationResponse {
+  double lat = 1;
+  double lng = 2;
+}
