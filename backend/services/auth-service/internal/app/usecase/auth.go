@@ -15,6 +15,7 @@ type Service interface {
 	SaveSession(ctx context.Context, dto LoginRequestDTO) (*AuthResponseDTO, error)
 	ClearSession(ctx context.Context, dto LogoutRequestDTO) error
 	RefreshToken(ctx context.Context, dto RefreshRequestDTO) (*RefreshResponseDTO, error)
+	UpdateFCMToken(ctx context.Context, dto UpdateFCMRequestDTO) error
 }
 
 type service struct {
@@ -115,4 +116,12 @@ func (s *service) RefreshToken(ctx context.Context, dto RefreshRequestDTO) (*Ref
 		AccessToken:  tokens.AccessToken,
 	}, nil
 
+}
+
+func (s *service) UpdateFCMToken(ctx context.Context, dto UpdateFCMRequestDTO) error {
+	if dto.FCMToken == "" || dto.DeviceID == "" || dto.UserID == "" {
+		return domain.ErrInvalidData
+	}
+
+	return s.repo.UpdateFCMToken(ctx, dto.UserID, dto.DeviceID, dto.FCMToken)
 }

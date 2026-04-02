@@ -20,6 +20,7 @@ CREATE TABLE users (
 -- 2. Таблица сессий (для Refresh токенов)
 CREATE TABLE sessions (
                           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                          fcm_token VARCHAR(255) UNIQUE NOT NULL,
                           user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
                           refresh_token VARCHAR(512) NOT NULL UNIQUE,
                           device_id VARCHAR(255) NOT NULL,

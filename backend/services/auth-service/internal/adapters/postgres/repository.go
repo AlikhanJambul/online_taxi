@@ -77,8 +77,21 @@ func (r *repository) GetUserByEmail(ctx context.Context, email string) (*domain.
 	return &user, nil
 }
 
+func (r *repository) UpdateFCMToken(ctx context.Context, userID, deviceID, fcmToken string) error {
+	query := `
+		UPDATE sessions 
+		SET fcm_token = $1 
+		WHERE user_id = $2 AND device_id = $3
+	`
+	_, err := r.db.Exec(ctx, query, fcmToken, userID, deviceID)
+	return err
+}
+
 func (r *repository) ClearSession(ctx context.Context, refreshToken string) error {
-	query := `DELETE FROM sessions WHERE refresh_token = $1;`
+	query := `
+		   DELETE FROM 
+           sessions 
+		   WHERE refresh_token = $1;`
 
 	tag, err := r.db.Exec(ctx, query, refreshToken)
 	if err != nil {

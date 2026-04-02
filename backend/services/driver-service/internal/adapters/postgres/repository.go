@@ -18,10 +18,16 @@ func NewRepo(db *pgxpool.Pool) domain.Repository {
 
 func (r *repository) SaveDriver(ctx context.Context, driver *domain.Driver) (string, error) {
 	query := `
-			INSERT INTO driver_profiles(user_id, car_make, car_model, car_color, license_plate) 
-			VALUES ($1, $2, $3, $4, $5) 
-			RETURNING status;
-`
+		INSERT INTO driver_profiles(user_id, car_make, car_model, car_color, license_plate) 
+		VALUES ($1, $2, $3, $4, $5) 
+		ON CONFLICT (user_id) DO UPDATE 
+		SET 
+			car_make = EXCLUDED.car_make,
+			car_model = EXCLUDED.car_model,
+			car_color = EXCLUDED.car_color,
+			license_plate = EXCLUDED.license_plate
+		RETURNING status;
+	`
 
 	var status string
 
