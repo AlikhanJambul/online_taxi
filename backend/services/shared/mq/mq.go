@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/rabbitmq/amqp091-go"
 	"log"
-	"online_taxi/services/pkg/models"
+	"online_taxi/services/shared/models"
 	"time"
 )
 

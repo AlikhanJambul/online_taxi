@@ -9,7 +9,7 @@ import (
 	pb "online_taxi/gen/driver-service"
 	"online_taxi/services/driver-service/internal/app/usecase"
 	"online_taxi/services/driver-service/internal/domain"
-	loggerPkg "online_taxi/services/pkg/logger"
+	loggerPkg "online_taxi/services/shared/logger"
 )
 
 type Handler struct {
@@ -48,12 +48,13 @@ func (h *Handler) CreateProfile(ctx context.Context, req *pb.CreateProfileReques
 func (h *Handler) GetProfile(ctx context.Context, req *emptypb.Empty) (*pb.DriverProfileResponse, error) {
 	resp, err := h.service.GetDriver(ctx)
 	if err != nil {
-		h.logger.Error("ошибка получения профиля: %v", err)
 
 		if errors.Is(err, domain.ErrDriverNotFound) {
+			h.logger.Warn("водитель не смог получить профиль: %v", err)
 			return nil, status.Error(codes.NotFound, err.Error())
 		}
 
+		h.logger.Error("ошибка получения профиля: %v", err)
 		return nil, status.Error(codes.Internal, domain.ErrInternal.Error())
 	}
 

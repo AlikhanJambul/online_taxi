@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"online_taxi/services/pkg/models"
+	"online_taxi/services/shared/models"
 )
 
 func ConnectToDB(cfg *models.Database) (*pgxpool.Pool, error) {

@@ -5,8 +5,8 @@ import (
 	"online_taxi/services/auth-service/internal/app/usecase"
 )
 
-func toRegisterDTO(req *pb.RegisterRequest) *usecase.RegisterRequestDTO {
-	return &usecase.RegisterRequestDTO{
+func toRegisterDTO(req *pb.RegisterRequest) usecase.RegisterRequestDTO {
+	return usecase.RegisterRequestDTO{
 		Phone:    req.GetPhone(),
 		Password: req.GetPassword(),
 		FullName: req.GetFullName(),
@@ -16,22 +16,22 @@ func toRegisterDTO(req *pb.RegisterRequest) *usecase.RegisterRequestDTO {
 	}
 }
 
-func toLogInDTO(req *pb.LoginRequest) *usecase.LoginRequestDTO {
-	return &usecase.LoginRequestDTO{
+func toLogInDTO(req *pb.LoginRequest) usecase.LoginRequestDTO {
+	return usecase.LoginRequestDTO{
 		Password: req.GetPassword(),
 		Email:    req.GetEmail(),
 		DeviceID: req.GetDeviceId(),
 	}
 }
 
-func toLogOutDTO(req *pb.LogoutRequest) *usecase.LogoutRequestDTO {
-	return &usecase.LogoutRequestDTO{
+func toLogOutDTO(req *pb.LogoutRequest) usecase.LogoutRequestDTO {
+	return usecase.LogoutRequestDTO{
 		RefreshToken: req.RefreshToken,
 	}
 }
 
-func toRefreshDTO(req *pb.RefreshRequest) *usecase.RefreshRequestDTO {
-	return &usecase.RefreshRequestDTO{
+func toRefreshDTO(req *pb.RefreshRequest) usecase.RefreshRequestDTO {
+	return usecase.RefreshRequestDTO{
 		RefreshToken: req.RefreshToken,
 		DeviceID:     req.DeviceId,
 	}

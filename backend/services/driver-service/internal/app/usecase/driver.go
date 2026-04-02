@@ -6,7 +6,7 @@ import (
 )
 
 type Service interface {
-	CreateDriver(ctx context.Context, dto *CreateRequestDTO) (*domain.Driver, error)
+	CreateDriver(ctx context.Context, dto CreateRequestDTO) (*domain.Driver, error)
 	GetDriver(ctx context.Context) (*domain.Driver, error)
 }
 
@@ -18,7 +18,7 @@ func NewService(repo domain.Repository) Service {
 	return &service{repo: repo}
 }
 
-func (s *service) CreateDriver(ctx context.Context, dto *CreateRequestDTO) (*domain.Driver, error) {
+func (s *service) CreateDriver(ctx context.Context, dto CreateRequestDTO) (*domain.Driver, error) {
 	idAny := ctx.Value("userID")
 
 	userID, ok := idAny.(string)

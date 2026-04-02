@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
-	"online_taxi/services/pkg/models"
+	"online_taxi/services/shared/models"
 )
 
 func ConnectToRedis(cfg *models.Database) (*redis.Client, error) {

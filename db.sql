@@ -41,8 +41,8 @@ CREATE TABLE driver_profiles (
 -- 4. Таблица поездок
 CREATE TABLE trips (
                        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                       passenger_id UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
-                       driver_id UUID REFERENCES users(id) ON DELETE SET NULL, -- Водителя может еще не быть
+                       passenger_id UUID NOT NULL,
+                       driver_id UUID, -- Водителя может еще не быть
                        status trip_status DEFAULT 'SEARCHING',
                        pickup_address TEXT NOT NULL,
                        dest_address TEXT NOT NULL,
