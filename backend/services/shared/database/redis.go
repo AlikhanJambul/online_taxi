@@ -9,7 +9,7 @@ import (
 	"online_taxi/services/shared/models"
 )
 
-func ConnectToRedis(cfg *models.Database) (*redis.Client, error) {
+func ConnectToRedis(cfg models.Database) (*redis.Client, error) {
 	addr := fmt.Sprintf("%s:%s", cfg.Host, cfg.Port)
 
 	client := redis.NewClient(&redis.Options{
