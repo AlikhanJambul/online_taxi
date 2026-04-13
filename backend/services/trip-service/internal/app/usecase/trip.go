@@ -17,6 +17,8 @@ type Service interface {
 	ProcessLocation(ctx context.Context, loc LocationDTO)
 	SubscribeToTrip(tripID string) <-chan LocationDTO
 	UnsubscribeFromTrip(tripID string)
+
+	FindAndNotifyDrivers(ctx context.Context, trip *domain.Trip) error
 }
 
 type service struct {
@@ -146,4 +148,35 @@ func (s *service) ProcessLocation(ctx context.Context, loc LocationDTO) {
 	if err != nil {
 		fmt.Printf("WARNING: failed to publish location to history: %v\n", err)
 	}
+}
+
+func (s *service) FindAndNotifyDrivers(ctx context.Context, trip *domain.Trip) error {
+	// 1. REDIS: Search for drivers within a 5 km radius
+	driverIDs, err := s.redis.FindNearest(ctx, trip.PickupLat, trip.PickupLng, 5.0)
+	if err != nil {
+		return fmt.Errorf("usecase - ошибка гео-поиска в Redis: %w", err)
+	}
+
+	if len(driverIDs) == 0 {
+		s.logger.Info("Для заказа %s нет свободных водителей рядом", trip.ID)
+		return nil // there's no error, just not found.
+		// (In real Uber, they start a timer and search again after 10 seconds)
+	}
+
+	// 2. POSTGRES: Get FCM tokens
+	tokens, err := s.repo.GetFCMTokens(ctx, driverIDs)
+	if err != nil {
+		return fmt.Errorf("usecase - ошибка получения fcm токенов: %w", err)
+	}
+
+	if len(tokens) == 0 {
+		s.logger.Info("Водители рядом есть, но у них нет fcm-токенов (не залогинены)")
+		return nil
+	}
+
+	// 3. GOOGLE (Firebase): send push-notification
+	s.logger.Info("🔥 УСПЕХ: Отправляем Push-уведомления %d водителям для заказа %s", len(tokens), trip.ID)
+	// TODO: push-notification
+
+	return nil
 }

@@ -30,3 +30,20 @@ func (r *LocationRepository) UpdateLocation(ctx context.Context, driverID string
 
 	return nil
 }
+
+func (r *LocationRepository) FindNearest(ctx context.Context, lat, lng float64, radiusKm float64) ([]string, error) {
+	drivers, err := r.client.GeoSearch(ctx, driversGeoKey, &redis.GeoSearchQuery{
+		Longitude:  lng,
+		Latitude:   lat,
+		Radius:     radiusKm,
+		RadiusUnit: "km",
+		Sort:       "ASC",
+		Count:      5,
+	}).Result()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return drivers, nil
+}
