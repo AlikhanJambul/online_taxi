@@ -112,3 +112,34 @@ func (r *repository) GetTrip(ctx context.Context, tripID string) (*domain.Trip, 
 
 	return trip, nil
 }
+
+func (r *repository) GetFCMTokens(ctx context.Context, driverIDs []string) ([]string, error) {
+	query := `
+				SELECT 
+				    fcm_token 
+				FROM sessions 
+				WHERE 
+				    user_id = ANY($1) AND fcm_token IS NOT NULL;
+`
+
+	rows, err := r.db.Query(ctx, query, driverIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	var tokens []string
+
+	for rows.Next() {
+		var token string
+
+		if err := rows.Scan(&token); err != nil {
+			return nil, err
+		}
+
+		if token != "" {
+			tokens = append(tokens, token)
+		}
+	}
+
+	return tokens, nil
+}
