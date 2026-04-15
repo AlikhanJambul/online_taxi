@@ -10,6 +10,7 @@ func Load() *models.Config {
 	rmq := models.RabbitMQ{}
 	mail := models.Mailpit{}
 	s3 := models.Minio{}
+	services := models.Ports{}
 
 	db.User = os.Getenv("DB_USER")
 	db.Password = os.Getenv("DB_PASSWORD")
@@ -37,11 +38,17 @@ func Load() *models.Config {
 
 	secretKey := os.Getenv("SECRET_KEY")
 
+	services.AdminPort = os.Getenv("ADMIN_PORT")
+	services.AuthPort = os.Getenv("AUTH_PORT")
+	services.DriverPort = os.Getenv("DRIVER_PORT")
+	services.TripPort = os.Getenv("TRIP_PORT")
+
 	return &models.Config{
 		DB:        db,
 		RMQ:       rmq,
 		Mail:      mail,
 		S3:        s3,
 		SecretKey: secretKey,
+		Services:  services,
 	}
 }

@@ -17,6 +17,15 @@ func NewHandler(service usecase.Service, logger *loggerPkg.Logger) *Handler {
 	return &Handler{service: service, logger: logger}
 }
 
+func (h *Handler) Route() *http.ServeMux {
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("GET /api/v1/admin/users", h.GetUsers)
+	mux.HandleFunc("POST /api/v1/admin/drivers/accept", h.AcceptDriver)
+
+	return mux
+}
+
 func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	users, err := h.service.GetUsers(r.Context())
 	if err != nil {
