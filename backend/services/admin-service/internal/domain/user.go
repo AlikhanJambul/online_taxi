@@ -9,6 +9,16 @@ type User struct {
 	AvatarURL string `json:"avatar_url,omitempty"`
 }
 
+type Driver struct {
+	User         User
+	CarMake      string `json:"car_make"`
+	CarModel     string `json:"car_model"`
+	CarColor     string `json:"car_color"`
+	CarUrl       string `json:"car_url"`
+	LicensePlate string `json:"license_plate"`
+	Status       string `json:"status"`
+}
+
 const (
 	DriverStatusApproved = "APPROVED"
 	DriverStatusRejected = "REJECTED"
