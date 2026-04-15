@@ -35,6 +35,7 @@ CREATE TABLE driver_profiles (
                                  car_make VARCHAR(50) NOT NULL,
                                  car_model VARCHAR(50) NOT NULL,
                                  car_color VARCHAR(30) NOT NULL,
+                                 car_url VARCHAR(255) NOT NULL,
                                  license_plate VARCHAR(20) UNIQUE NOT NULL,
                                  status driver_status DEFAULT 'PENDING'
 );
