@@ -6,4 +6,5 @@ type Config struct {
 	S3        Minio
 	Mail      Mailpit
 	SecretKey string
+	Services  Ports
 }

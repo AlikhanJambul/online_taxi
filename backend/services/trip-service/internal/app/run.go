@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"online_taxi/services/shared/jwt"
@@ -55,7 +56,9 @@ func Run() {
 	service := usecase.NewService(repo, publisher, locationRepo, newLogger)
 	h := grpcHandler.NewHandler(service, newLogger)
 
-	lis, err := net.Listen("tcp", ":50053")
+	port := fmt.Sprintf(":%s", cfg.Services.TripPort)
+
+	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("Не удалось прослушать порт: %v", err)
 	}
@@ -69,7 +72,7 @@ func Run() {
 
 	pb.RegisterTripServiceServer(grpcServer, h)
 
-	log.Println("Trip-сервис успешно запущен на порту :50053")
+	log.Println("Trip-сервис успешно запущен на порту " + port)
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Ошибка при запуске gRPC сервера: %v", err)
 	}

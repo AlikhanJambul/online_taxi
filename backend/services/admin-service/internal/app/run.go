@@ -2,11 +2,12 @@ package app // или где у тебя лежит этот файл
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
-	httpPkg "online_taxi/services/admin-service/internal/transport/http"
 	"online_taxi/services/admin-service/internal/adapters/postgres"
 	"online_taxi/services/admin-service/internal/app/usecase"
+	httpPkg "online_taxi/services/admin-service/internal/transport/http"
 	"online_taxi/services/shared/config"
 	"online_taxi/services/shared/database"
 	"os"
@@ -31,15 +32,11 @@ func Run() {
 	service := usecase.NewService(repo)
 	handler := httpPkg.NewHandler(service, newLogger)
 
-	mux := http.NewServeMux()
+	port := fmt.Sprintf(":%s", cfg.Services.AdminPort)
 
-	mux.HandleFunc("GET /api/v1/admin/users", handler.GetUsers)
-	mux.HandleFunc("POST /api/v1/admin/drivers/accept", handler.AcceptDriver)
-
-	port := ":8080"
 	srv := &http.Server{
 		Addr:         port,
-		Handler:      mux,
+		Handler:      handler.Route(),
 		ReadTimeout:  10 * time.Second, // Защита от медленных клиентов
 		WriteTimeout: 10 * time.Second,
 	}

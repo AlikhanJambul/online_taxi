@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"google.golang.org/grpc"
 	"log"
 	"net"
@@ -32,7 +33,9 @@ func Run() {
 
 	h := grpcHandler.NewHandler(service, newLogger)
 
-	lis, err := net.Listen("tcp", ":50052")
+	port := fmt.Sprintf(":%s", cfg.Services.DriverPort)
+
+	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("Не удалось прослушать порт: %v", err)
 	}
@@ -46,7 +49,7 @@ func Run() {
 
 	pb.RegisterDriverServiceServer(grpcServer, h)
 
-	log.Println("Auth-сервис успешно запущен на порту :50052")
+	log.Println("Auth-сервис успешно запущен на порту " + port)
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Ошибка при запуске gRPC сервера: %v", err)
 	}

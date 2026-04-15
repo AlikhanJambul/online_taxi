@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"online_taxi/services/auth-service/internal/transport/grpc/interceptors"
@@ -35,7 +36,9 @@ func Run() {
 
 	h := grpcHandler.NewHandler(service, newLogger)
 
-	lis, err := net.Listen("tcp", ":50051")
+	port := fmt.Sprintf(":%s", cfg.Services.AuthPort)
+
+	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("Не удалось прослушать порт: %v", err)
 	}
@@ -49,7 +52,7 @@ func Run() {
 
 	pb.RegisterAuthServiceServer(grpcServer, h)
 
-	log.Println("Auth-сервис успешно запущен на порту :50051")
+	log.Println("Auth-сервис успешно запущен на порту " + port)
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Ошибка при запуске gRPC сервера: %v", err)
 	}
