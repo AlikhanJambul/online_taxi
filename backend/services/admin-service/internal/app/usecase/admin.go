@@ -8,6 +8,7 @@ import (
 type Service interface {
 	GetUsers(ctx context.Context) ([]domain.User, error)
 	AcceptDriver(ctx context.Context, dto AcceptDriverDTO) error
+	GetDrivers(ctx context.Context) ([]domain.Driver, error)
 }
 
 type service struct {
@@ -30,4 +31,8 @@ func (s *service) AcceptDriver(ctx context.Context, dto AcceptDriverDTO) error {
 	}
 
 	return s.repo.AcceptDriverProfile(ctx, dto.ID, status)
+}
+
+func (s *service) GetDrivers(ctx context.Context) ([]domain.Driver, error) {
+	return s.repo.GetDrivers(ctx)
 }
