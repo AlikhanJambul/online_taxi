@@ -11,11 +11,12 @@ type Service interface {
 }
 
 type service struct {
-	repo domain.Repository
+	repo        domain.Repository
+	fileStorage domain.FileStorage
 }
 
-func NewService(repo domain.Repository) Service {
-	return &service{repo: repo}
+func NewService(repo domain.Repository, fileStorage domain.FileStorage) Service {
+	return &service{repo: repo, fileStorage: fileStorage}
 }
 
 func (s *service) CreateDriver(ctx context.Context, dto CreateRequestDTO) (*domain.Driver, error) {
