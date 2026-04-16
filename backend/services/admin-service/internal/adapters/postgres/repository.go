@@ -77,3 +77,60 @@ func (r *repository) GetUsers(ctx context.Context) ([]domain.User, error) {
 
 	return users, nil
 }
+
+func (r *repository) GetDrivers(ctx context.Context) ([]domain.Driver, error) {
+	query := `
+				SELECT 
+				    u.id, 
+				    u.email, 
+				    u.phone, 
+				    u.full_name, 
+				    u.role, 
+				    u.avatar_url,
+				    dp.car_make, 
+				    dp.car_model, 
+				    dp.car_color, 
+				    dp.car_url, 
+-- 				    dp.license_plate, 
+				    dp.status
+				FROM 
+				    users u
+				INNER JOIN 
+				    driver_profiles dp ON u.id = dp.user_id;
+`
+
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	var users []domain.Driver
+
+	for rows.Next() {
+		var user domain.Driver
+
+		if err := rows.Scan(
+			&user.User.ID,
+			&user.User.Email,
+			&user.User.Phone,
+			&user.User.FullName,
+			&user.User.Role,
+			&user.User.AvatarURL,
+			&user.CarMake,
+			&user.CarModel,
+			&user.CarColor,
+			//&user.LicensePlate,
+			&user.CarUrl,
+		); err != nil {
+			return nil, err
+		}
+
+		users = append(users, user)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}

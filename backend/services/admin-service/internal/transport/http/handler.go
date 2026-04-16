@@ -22,6 +22,7 @@ func (h *Handler) Route() *http.ServeMux {
 
 	mux.HandleFunc("GET /api/v1/admin/users", h.GetUsers)
 	mux.HandleFunc("POST /api/v1/admin/drivers/accept", h.AcceptDriver)
+	mux.HandleFunc("GET /api/v1/admin/drivers", h.GetDrivers)
 
 	return mux
 }
@@ -54,4 +55,15 @@ func (h *Handler) AcceptDriver(w http.ResponseWriter, r *http.Request) {
 	}
 
 	JsonResponse(w, 200, "статус изменён!")
+}
+
+func (h *Handler) GetDrivers(w http.ResponseWriter, r *http.Request) {
+	drivers, err := h.service.GetDrivers(r.Context())
+	if err != nil {
+		h.logger.Warn("ошибка получения водителей: %v", err)
+		ErrJsonResponse(w, err)
+		return
+	}
+
+	JsonResponse(w, 200, drivers)
 }

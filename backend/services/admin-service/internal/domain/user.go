@@ -16,7 +16,8 @@ type Driver struct {
 	CarColor     string `json:"car_color"`
 	CarUrl       string `json:"car_url"`
 	LicensePlate string `json:"license_plate"`
-	Status       string `json:"status"`
+
+	Status string `json:"status"`
 }
 
 const (
