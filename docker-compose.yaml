@@ -149,6 +149,52 @@ services:
     networks:
       - taxi-net
 
+  trip-service:
+    build:
+      context: ./backend
+      dockerfile: ./services/trip-service/Dockerfile.trip
+    container_name: taxi_trip_service
+    restart: on-failure
+    ports:
+      - "50053:50053"
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=postgres
+      - REDIS_HOST=redis
+      - RMQ_HOST=rabbitmq
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - taxi-net
+
+  matching-service:
+    build:
+      context: ./backend
+      dockerfile: ./services/trip-service/Dockerfile.matching
+    container_name: taxi_matching_service
+    restart: on-failure
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=postgres
+      - REDIS_HOST=redis
+      - RMQ_HOST=rabbitmq
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - taxi-net
+
 networks:
   taxi-net:
     driver: bridge

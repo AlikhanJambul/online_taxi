@@ -31,6 +31,7 @@ func TripInterceptor(tm *jwt.TokenManager) grpc.UnaryServerInterceptor {
 		}
 
 		accessToken := values[0]
+
 		accessToken = strings.TrimPrefix(accessToken, "Bearer ")
 
 		claims, err := tm.ParseToken(accessToken)
@@ -58,4 +59,49 @@ func TimeoutInterceptor(timeout time.Duration) grpc.UnaryServerInterceptor {
 
 		return handler(ctx, req)
 	}
+}
+
+func TripStreamInterceptor(tm *jwt.TokenManager) grpc.StreamServerInterceptor {
+	return func(
+		srv interface{},
+		ss grpc.ServerStream,
+		info *grpc.StreamServerInfo,
+		handler grpc.StreamHandler,
+	) error {
+		md, ok := metadata.FromIncomingContext(ss.Context())
+		if !ok {
+			return status.Error(codes.Unauthenticated, "метаданные не найдены")
+		}
+
+		values := md["authorization"]
+		if len(values) == 0 {
+			return status.Error(codes.Unauthenticated, "токен авторизации не предоставлен")
+		}
+
+		accessToken := strings.TrimPrefix(values[0], "Bearer ")
+
+		claims, err := tm.ParseToken(accessToken)
+		if err != nil {
+			return status.Error(codes.Unauthenticated, "недействительный или просроченный токен")
+		}
+
+		wrapped := &wrappedStream{
+			ServerStream: ss,
+			ctx: context.WithValue(
+				context.WithValue(ss.Context(), "userID", claims.UserID),
+				"role", claims.Role,
+			),
+		}
+
+		return handler(srv, wrapped)
+	}
+}
+
+type wrappedStream struct {
+	grpc.ServerStream
+	ctx context.Context
+}
+
+func (w *wrappedStream) Context() context.Context {
+	return w.ctx
 }
