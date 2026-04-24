@@ -33,7 +33,7 @@ func Run() {
 	tm := jwt.NewTokenManager(cfg.SecretKey)
 	s3Storage, err := minio.NewFileStorage(endpoint, cfg.S3.User, cfg.S3.Password)
 	repo := postgres.NewRepo(db)
-	service := usecase.NewService(repo)
+	service := usecase.NewService(repo, s3Storage)
 
 	h := grpcHandler.NewHandler(service, newLogger)
 

@@ -7,8 +7,7 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/auth_service ./services/auth-service/cmd/auth/main.go
-
+RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/matching_service ./services/trip-service/cmd/matching/main.go
 
 FROM alpine:latest
 
@@ -16,8 +15,6 @@ RUN apk --no-cache add ca-certificates tzdata
 
 WORKDIR /root/
 
-COPY --from=builder /bin/auth_service .
+COPY --from=builder /bin/matching_service .
 
-EXPOSE 50051
-
-CMD ["./auth_service"]
+CMD ["./matching_service"]

@@ -124,6 +124,7 @@ func (h *Handler) GetTrip(ctx context.Context, req *pb.GetTripRequest) (*pb.Trip
 func (h *Handler) SendLocation(stream pb.TripService_SendLocationServer) error {
 	driverID, ok := stream.Context().Value("userID").(string)
 	if !ok || driverID == "" {
+		h.logger.Info("%s, %v", driverID, ok)
 		return status.Error(codes.Unauthenticated, "неавторизован")
 	}
 
@@ -149,6 +150,7 @@ func (h *Handler) SendLocation(stream pb.TripService_SendLocationServer) error {
 		h.service.ProcessLocation(stream.Context(), dto)
 	}
 }
+
 func (h *Handler) TrackTrip(req *pb.TrackRequest, stream pb.TripService_TrackTripServer) error {
 	locChan := h.service.SubscribeToTrip(req.TripId)
 

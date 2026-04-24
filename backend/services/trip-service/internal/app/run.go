@@ -68,6 +68,9 @@ func Run() {
 			interceptors.TripInterceptor(tm),
 			interceptors.TimeoutInterceptor(10*time.Second),
 		),
+		grpc.ChainStreamInterceptor(
+			interceptors.TripStreamInterceptor(tm),
+		),
 	)
 
 	pb.RegisterTripServiceServer(grpcServer, h)

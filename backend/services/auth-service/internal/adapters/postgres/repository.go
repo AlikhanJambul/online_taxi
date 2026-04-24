@@ -19,7 +19,7 @@ func NewRepository(db *pgxpool.Pool) domain.Repository {
 
 func (r *repository) SaveUser(ctx context.Context, data *domain.User, token string, userID uuid.UUID, deviceID string) error {
 	queryUser := `INSERT INTO users (id, phone, email, password_hash, full_name, role, avatar_url)  VALUES ($1, $2, $3, $4, $5, $6, $7);`
-	querySession := `INSERT INTO sessions (user_id, refresh_token, device_id, expires_at) VALUES ($1, $2, $3, NOW() + INTERVAL '30 days');`
+	querySession := `INSERT INTO sessions (user_id, refresh_token, device_id, fcm_token, expires_at) VALUES ($1, $2, $3, $4, NOW() + INTERVAL '30 days');`
 
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
@@ -32,7 +32,7 @@ func (r *repository) SaveUser(ctx context.Context, data *domain.User, token stri
 		return err
 	}
 
-	_, err = tx.Exec(ctx, querySession, userID, token, deviceID)
+	_, err = tx.Exec(ctx, querySession, userID, token, deviceID, "lolo")
 	if err != nil {
 		return err
 	}

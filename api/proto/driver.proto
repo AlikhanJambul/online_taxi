@@ -32,5 +32,6 @@ message DriverProfileResponse {
   string car_model = 3;
   string car_color = 4;
   string license_plate = 5;
-  DriverStatus status = 6;
+  string car_url = 6;
+  DriverStatus status = 7;
 }

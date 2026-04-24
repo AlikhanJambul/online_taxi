@@ -24,16 +24,15 @@ func NewConsumerHandler(service usecase.Service, logger *loggerPkg.Logger, ch *a
 	}
 }
 
-// Start запускает бесконечный цикл прослушивания очереди
-func (h *ConsumerHandler) Start() error {
+func (h *ConsumerHandler) Start(ctx context.Context) error {
 	msgs, err := h.ch.Consume(
 		"matching.find_driver",
-		"",    // consumer tag
-		false, // autoAck = false (мы сами будем подтверждать)
-		false, // exclusive
-		false, // noLocal
-		false, // noWait
-		nil,   // args
+		"",
+		false,
+		false,
+		false,
+		false,
+		nil,
 	)
 	if err != nil {
 		return fmt.Errorf("ошибка подписки на очередь: %w", err)
@@ -41,28 +40,29 @@ func (h *ConsumerHandler) Start() error {
 
 	h.logger.Info("🚀 Воркер подбора водителей (Matching) запущен. Жду новые заказы...")
 
-	go func() {
-		for d := range msgs {
+	// Блокируем до завершения контекста
+	for {
+		select {
+		case d, ok := <-msgs:
+			if !ok {
+				return fmt.Errorf("канал RabbitMQ закрыт")
+			}
 			var trip domain.Trip
-
 			if err := json.Unmarshal(d.Body, &trip); err != nil {
-				h.logger.Error("ошибка парсинга JSON из RMQ: %v", err)
-				d.Reject(false) // Выбрасываем кривое сообщение
+				h.logger.Error("ошибка парсинга JSON: %v", err)
+				d.Reject(false)
 				continue
 			}
-
-			h.logger.Info("Поступил новый заказ %s! Ищу водителей...", trip.ID)
-
+			h.logger.Info("Поступил новый заказ %s!", trip.ID)
 			err := h.service.FindAndNotifyDrivers(context.Background(), &trip)
 			if err != nil {
 				h.logger.Error("ошибка обработки заказа %s: %v", trip.ID, err)
 				d.Nack(false, true)
 			} else {
-				// 3. Успешно! Говорим Рэббиту удалить сообщение
 				d.Ack(false)
 			}
+		case <-ctx.Done():
+			return nil
 		}
-	}()
-
-	return nil
+	}
 }

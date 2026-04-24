@@ -18,8 +18,8 @@ func NewRepo(db *pgxpool.Pool) domain.Repository {
 
 func (r *repository) SaveDriver(ctx context.Context, driver *domain.Driver) (string, error) {
 	query := `
-		INSERT INTO driver_profiles(user_id, car_make, car_model, car_color, license_plate) 
-		VALUES ($1, $2, $3, $4, $5) 
+		INSERT INTO driver_profiles(user_id, car_make, car_model, car_color, license_plate, car_url) 
+		VALUES ($1, $2, $3, $4, $5, $6) 
 		ON CONFLICT (user_id) DO UPDATE 
 		SET 
 			car_make = EXCLUDED.car_make,
@@ -32,7 +32,7 @@ func (r *repository) SaveDriver(ctx context.Context, driver *domain.Driver) (str
 	var status string
 
 	err := r.db.QueryRow(ctx, query,
-		driver.UserID, driver.CarMake, driver.CarModel, driver.CarColor, driver.LicensePlate,
+		driver.UserID, driver.CarMake, driver.CarModel, driver.CarColor, driver.LicensePlate, "http",
 	).Scan(&status)
 
 	if err != nil {

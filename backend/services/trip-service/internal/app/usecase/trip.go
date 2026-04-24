@@ -46,7 +46,7 @@ func NewService(
 	}
 }
 
-func (u *service) CreateTrip(ctx context.Context, dto CreateTripDTO) (*domain.Trip, error) {
+func (s *service) CreateTrip(ctx context.Context, dto CreateTripDTO) (*domain.Trip, error) {
 	trip := &domain.Trip{
 		PassengerID:   dto.PassengerID,
 		PickupAddress: dto.PickupAddress,
@@ -60,12 +60,12 @@ func (u *service) CreateTrip(ctx context.Context, dto CreateTripDTO) (*domain.Tr
 		Status: domain.StatusSearching,
 	}
 
-	err := u.repo.CreateTrip(ctx, trip)
+	err := s.repo.CreateTrip(ctx, trip)
 	if err != nil {
 		return nil, fmt.Errorf("usecase - failed to create trip: %w", err)
 	}
 
-	err = u.rmq.Publish("trip.events", "trip.created", trip)
+	err = s.rmq.Publish("trip.events", "trip.created", trip)
 	if err != nil {
 		fmt.Printf("WARNING: failed to publish trip.created event: %v\n", err)
 	}

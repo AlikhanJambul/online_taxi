@@ -10,7 +10,7 @@ import (
 )
 
 func ConnectToRedis(cfg models.Database) (*redis.Client, error) {
-	addr := fmt.Sprintf("%s:%s", cfg.Host, cfg.Port)
+	addr := fmt.Sprintf("%s:%s", cfg.RedisHost, cfg.RedisPort)
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     addr,
