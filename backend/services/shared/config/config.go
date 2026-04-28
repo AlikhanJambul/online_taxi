@@ -11,6 +11,7 @@ func Load() *models.Config {
 	mail := models.Mailpit{}
 	s3 := models.Minio{}
 	services := models.Ports{}
+	firebase := models.Firebase{}
 
 	db.User = os.Getenv("DB_USER")
 	db.Password = os.Getenv("DB_PASSWORD")
@@ -38,6 +39,8 @@ func Load() *models.Config {
 
 	secretKey := os.Getenv("SECRET_KEY")
 
+	firebase.CredentialsPath = os.Getenv("FIREBASE_CREDENTIALS_PATH")
+
 	services.AdminPort = os.Getenv("ADMIN_PORT")
 	services.AuthPort = os.Getenv("AUTH_PORT")
 	services.DriverPort = os.Getenv("DRIVER_PORT")
@@ -50,5 +53,6 @@ func Load() *models.Config {
 		S3:        s3,
 		SecretKey: secretKey,
 		Services:  services,
+		Firebase:  firebase,
 	}
 }

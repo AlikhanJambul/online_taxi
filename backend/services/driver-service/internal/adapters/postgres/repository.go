@@ -46,7 +46,7 @@ func (r *repository) GetDriver(ctx context.Context, id string) (*domain.Driver, 
 	query := `
 		SELECT user_id, car_make, car_model, car_color, license_plate, status
 		FROM driver_profiles
-		WHERE user_id = $1; 
+		WHERE user_id = $2; 
 	`
 
 	var resp domain.Driver
