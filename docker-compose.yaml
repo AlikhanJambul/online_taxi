@@ -197,6 +197,24 @@ services:
     networks:
       - taxi-net
 
+  admin-service:
+      build:
+        context: ./backend
+        dockerfile: ./services/admin-service/Dockerfile
+      container_name: taxi_admin_service
+      restart: on-failure
+      ports:
+        - "50050:50050"
+      env_file:
+        - .env
+      environment:
+        - DB_HOST=postgres
+      depends_on:
+        postgres:
+          condition: service_healthy
+      networks:
+        - taxi-net
+
 networks:
   taxi-net:
     driver: bridge
