@@ -7,6 +7,7 @@ import (
 	"online_taxi/services/shared/database"
 	"online_taxi/services/shared/logger"
 	"online_taxi/services/shared/mq"
+	"online_taxi/services/trip-service/internal/adapters/firebase"
 	"online_taxi/services/trip-service/internal/adapters/postgres"
 	location "online_taxi/services/trip-service/internal/adapters/redis"
 	"online_taxi/services/trip-service/internal/adapters/rmq"
@@ -45,8 +46,13 @@ func main() {
 		log.Fatalf("Ошибка подключения к очереди: %v", err)
 	}
 
+	notification, err := firebase.New(cfg.Firebase.CredentialsPath)
+	if err != nil {
+		log.Fatalf("Ошибка подключения к FireBase: %v", err)
+	}
+
 	repo := postgres.NewRepo(connPostgres)
-	service := usecase.NewService(repo, publisher, locationRepo, newLogger)
+	service := usecase.NewService(repo, publisher, locationRepo, notification, newLogger)
 
 	handler := consumer.NewConsumerHandler(service, newLogger, ch)
 

@@ -157,6 +157,8 @@ services:
     restart: on-failure
     ports:
       - "50053:50053"
+    volumes:
+      - ./serviceAccountKey.json:/app/serviceAccountKey.json:ro
     env_file:
       - .env
     environment:

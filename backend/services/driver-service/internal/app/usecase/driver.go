@@ -49,7 +49,7 @@ func (s *service) GetDriver(ctx context.Context) (*domain.Driver, error) {
 	idAny := ctx.Value("userID")
 
 	userID, ok := idAny.(string)
-	if !ok || userID == "" {
+	if !ok || userID == "'" {
 		return nil, domain.ErrEmptyCtx
 	}
 

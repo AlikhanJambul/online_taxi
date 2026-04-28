@@ -25,6 +25,7 @@ type service struct {
 	repo   domain.Repository
 	rmq    *queue.RabbitPublisher
 	redis  domain.DriverLocationRepository
+	notify domain.Notification
 	logger *loggerPkg.Logger
 
 	activeStreams map[string]chan LocationDTO
@@ -35,12 +36,14 @@ func NewService(
 	repo domain.Repository,
 	rmq *queue.RabbitPublisher,
 	redis domain.DriverLocationRepository,
+	notify domain.Notification,
 	logger *loggerPkg.Logger,
 ) Service {
 	return &service{
 		repo:          repo,
 		rmq:           rmq,
 		redis:         redis,
+		notify:        notify,
 		logger:        logger,
 		activeStreams: make(map[string]chan LocationDTO),
 	}
@@ -177,6 +180,16 @@ func (s *service) FindAndNotifyDrivers(ctx context.Context, trip *domain.Trip) e
 	// 3. GOOGLE (Firebase): send push-notification
 	s.logger.Info("🔥 УСПЕХ: Отправляем Push-уведомления %d водителям для заказа %s", len(tokens), trip.ID)
 	// TODO: push-notification
+	response := domain.NotifyNewTrip(trip.ID)
 
+	// TODO: return []string deadTokens
+	_, err = s.notify.SendPushMulti(ctx, tokens, response.Title, response.Body)
+	if err != nil {
+		return err
+	}
+
+	//for _, r := range deadTokens {
+	//	//TODO: delete tokens from db
+	//}
 	return nil
 }

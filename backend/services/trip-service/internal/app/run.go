@@ -7,6 +7,7 @@ import (
 	"online_taxi/services/shared/jwt"
 	"online_taxi/services/shared/logger"
 	"online_taxi/services/shared/mq"
+	"online_taxi/services/trip-service/internal/adapters/firebase"
 	location "online_taxi/services/trip-service/internal/adapters/redis"
 	"online_taxi/services/trip-service/internal/adapters/rmq"
 	"online_taxi/services/trip-service/internal/transport/grpc/interceptors"
@@ -52,8 +53,13 @@ func Run() {
 		log.Fatalf("Ошибка подключения к очереди: %v", err)
 	}
 
+	notification, err := firebase.New(cfg.Firebase.CredentialsPath)
+	if err != nil {
+		log.Fatalf("Ошибка подключения к FireBase: %v", err)
+	}
+
 	repo := postgres.NewRepo(connPostgres)
-	service := usecase.NewService(repo, publisher, locationRepo, newLogger)
+	service := usecase.NewService(repo, publisher, locationRepo, notification, newLogger)
 	h := grpcHandler.NewHandler(service, newLogger)
 
 	port := fmt.Sprintf(":%s", cfg.Services.TripPort)
