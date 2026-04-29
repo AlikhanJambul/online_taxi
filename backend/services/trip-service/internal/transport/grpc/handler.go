@@ -177,6 +177,17 @@ func (h *Handler) TrackTrip(req *pb.TrackRequest, stream pb.TripService_TrackTri
 	}
 }
 
+func (h *Handler) EstimatePrice(ctx context.Context, req *pb.EstimateRequest) (*pb.EstimateResponse, error) {
+	dto := toEstimateDTO(req)
+
+	response := h.service.EstimatePrice(dto)
+
+	return &pb.EstimateResponse{
+		PriceKzt:   response.PriceKZT,
+		DistanceKm: response.DistanceKm,
+	}, nil
+}
+
 func parseStatus(status domain.TripStatus) pb.TripStatus {
 	switch status {
 	case domain.StatusAccepted:

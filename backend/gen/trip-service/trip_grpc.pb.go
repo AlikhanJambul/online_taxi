@@ -23,6 +23,7 @@ const (
 	TripService_CreateTrip_FullMethodName   = "/trip.TripService/CreateTrip"
 	TripService_AcceptTrip_FullMethodName   = "/trip.TripService/AcceptTrip"
 	TripService_GetTrip_FullMethodName      = "/trip.TripService/GetTrip"
+	TripService_EstimateTrip_FullMethodName = "/trip.TripService/EstimateTrip"
 	TripService_SendLocation_FullMethodName = "/trip.TripService/SendLocation"
 	TripService_TrackTrip_FullMethodName    = "/trip.TripService/TrackTrip"
 )
@@ -37,10 +38,12 @@ type TripServiceClient interface {
 	AcceptTrip(ctx context.Context, in *AcceptTripRequest, opts ...grpc.CallOption) (*TripResponse, error)
 	// 3. Получить инфу по конкретной поездке
 	GetTrip(ctx context.Context, in *GetTripRequest, opts ...grpc.CallOption) (*TripResponse, error)
-	// 4. Водитель постоянно шлет свои координаты (Client Streaming)
+	// 4. Узнать стоимость поездки
+	EstimateTrip(ctx context.Context, in *EstimateRequest, opts ...grpc.CallOption) (*EstimateResponse, error)
+	// 5. Водитель постоянно шлет свои координаты (Client Streaming)
 	// Ключевое слово stream в запросе значит, что клиент открывает трубу и пуляет данные
 	SendLocation(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[LocationRequest, emptypb.Empty], error)
-	// 5. Пассажир слушает перемещения водителя (Server Streaming)
+	// 6. Пассажир слушает перемещения водителя (Server Streaming)
 	// Ключевое слово stream в ответе значит, что сервер постоянно отдает данные клиенту
 	TrackTrip(ctx context.Context, in *TrackRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[LocationResponse], error)
 }
@@ -77,6 +80,16 @@ func (c *tripServiceClient) GetTrip(ctx context.Context, in *GetTripRequest, opt
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(TripResponse)
 	err := c.cc.Invoke(ctx, TripService_GetTrip_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tripServiceClient) EstimateTrip(ctx context.Context, in *EstimateRequest, opts ...grpc.CallOption) (*EstimateResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(EstimateResponse)
+	err := c.cc.Invoke(ctx, TripService_EstimateTrip_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -125,10 +138,12 @@ type TripServiceServer interface {
 	AcceptTrip(context.Context, *AcceptTripRequest) (*TripResponse, error)
 	// 3. Получить инфу по конкретной поездке
 	GetTrip(context.Context, *GetTripRequest) (*TripResponse, error)
-	// 4. Водитель постоянно шлет свои координаты (Client Streaming)
+	// 4. Узнать стоимость поездки
+	EstimateTrip(context.Context, *EstimateRequest) (*EstimateResponse, error)
+	// 5. Водитель постоянно шлет свои координаты (Client Streaming)
 	// Ключевое слово stream в запросе значит, что клиент открывает трубу и пуляет данные
 	SendLocation(grpc.ClientStreamingServer[LocationRequest, emptypb.Empty]) error
-	// 5. Пассажир слушает перемещения водителя (Server Streaming)
+	// 6. Пассажир слушает перемещения водителя (Server Streaming)
 	// Ключевое слово stream в ответе значит, что сервер постоянно отдает данные клиенту
 	TrackTrip(*TrackRequest, grpc.ServerStreamingServer[LocationResponse]) error
 	mustEmbedUnimplementedTripServiceServer()
@@ -149,6 +164,9 @@ func (UnimplementedTripServiceServer) AcceptTrip(context.Context, *AcceptTripReq
 }
 func (UnimplementedTripServiceServer) GetTrip(context.Context, *GetTripRequest) (*TripResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetTrip not implemented")
+}
+func (UnimplementedTripServiceServer) EstimateTrip(context.Context, *EstimateRequest) (*EstimateResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method EstimateTrip not implemented")
 }
 func (UnimplementedTripServiceServer) SendLocation(grpc.ClientStreamingServer[LocationRequest, emptypb.Empty]) error {
 	return status.Error(codes.Unimplemented, "method SendLocation not implemented")
@@ -231,6 +249,24 @@ func _TripService_GetTrip_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TripService_EstimateTrip_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EstimateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TripServiceServer).EstimateTrip(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TripService_EstimateTrip_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TripServiceServer).EstimateTrip(ctx, req.(*EstimateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _TripService_SendLocation_Handler(srv interface{}, stream grpc.ServerStream) error {
 	return srv.(TripServiceServer).SendLocation(&grpc.GenericServerStream[LocationRequest, emptypb.Empty]{ServerStream: stream})
 }
@@ -267,6 +303,10 @@ var TripService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTrip",
 			Handler:    _TripService_GetTrip_Handler,
+		},
+		{
+			MethodName: "EstimateTrip",
+			Handler:    _TripService_EstimateTrip_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

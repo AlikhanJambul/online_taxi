@@ -25,3 +25,10 @@ type LocationDTO struct {
 	Lat      float64
 	Lng      float64
 }
+
+type EstimatePriceReqDTO struct {
+	PickupLat float64
+	PickupLng float64
+	DestLat   float64
+	DestLng   float64
+}

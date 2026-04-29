@@ -543,6 +543,126 @@ func (x *LocationResponse) GetLng() float64 {
 	return 0
 }
 
+type EstimateRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PickupLat     float64                `protobuf:"fixed64,1,opt,name=pickup_lat,json=pickupLat,proto3" json:"pickup_lat,omitempty"`
+	PickupLng     float64                `protobuf:"fixed64,2,opt,name=pickup_lng,json=pickupLng,proto3" json:"pickup_lng,omitempty"`
+	DestLat       float64                `protobuf:"fixed64,3,opt,name=dest_lat,json=destLat,proto3" json:"dest_lat,omitempty"`
+	DestLng       float64                `protobuf:"fixed64,4,opt,name=dest_lng,json=destLng,proto3" json:"dest_lng,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EstimateRequest) Reset() {
+	*x = EstimateRequest{}
+	mi := &file_trip_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EstimateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EstimateRequest) ProtoMessage() {}
+
+func (x *EstimateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_trip_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EstimateRequest.ProtoReflect.Descriptor instead.
+func (*EstimateRequest) Descriptor() ([]byte, []int) {
+	return file_trip_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *EstimateRequest) GetPickupLat() float64 {
+	if x != nil {
+		return x.PickupLat
+	}
+	return 0
+}
+
+func (x *EstimateRequest) GetPickupLng() float64 {
+	if x != nil {
+		return x.PickupLng
+	}
+	return 0
+}
+
+func (x *EstimateRequest) GetDestLat() float64 {
+	if x != nil {
+		return x.DestLat
+	}
+	return 0
+}
+
+func (x *EstimateRequest) GetDestLng() float64 {
+	if x != nil {
+		return x.DestLng
+	}
+	return 0
+}
+
+type EstimateResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PriceKzt      int32                  `protobuf:"varint,1,opt,name=price_kzt,json=priceKzt,proto3" json:"price_kzt,omitempty"`
+	DistanceKm    float64                `protobuf:"fixed64,2,opt,name=distance_km,json=distanceKm,proto3" json:"distance_km,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EstimateResponse) Reset() {
+	*x = EstimateResponse{}
+	mi := &file_trip_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EstimateResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EstimateResponse) ProtoMessage() {}
+
+func (x *EstimateResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_trip_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EstimateResponse.ProtoReflect.Descriptor instead.
+func (*EstimateResponse) Descriptor() ([]byte, []int) {
+	return file_trip_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *EstimateResponse) GetPriceKzt() int32 {
+	if x != nil {
+		return x.PriceKzt
+	}
+	return 0
+}
+
+func (x *EstimateResponse) GetDistanceKm() float64 {
+	if x != nil {
+		return x.DistanceKm
+	}
+	return 0
+}
+
 var File_trip_proto protoreflect.FileDescriptor
 
 const file_trip_proto_rawDesc = "" +
@@ -586,7 +706,18 @@ const file_trip_proto_rawDesc = "" +
 	"\atrip_id\x18\x01 \x01(\tR\x06tripId\"6\n" +
 	"\x10LocationResponse\x12\x10\n" +
 	"\x03lat\x18\x01 \x01(\x01R\x03lat\x12\x10\n" +
-	"\x03lng\x18\x02 \x01(\x01R\x03lng*}\n" +
+	"\x03lng\x18\x02 \x01(\x01R\x03lng\"\x85\x01\n" +
+	"\x0fEstimateRequest\x12\x1d\n" +
+	"\n" +
+	"pickup_lat\x18\x01 \x01(\x01R\tpickupLat\x12\x1d\n" +
+	"\n" +
+	"pickup_lng\x18\x02 \x01(\x01R\tpickupLng\x12\x19\n" +
+	"\bdest_lat\x18\x03 \x01(\x01R\adestLat\x12\x19\n" +
+	"\bdest_lng\x18\x04 \x01(\x01R\adestLng\"P\n" +
+	"\x10EstimateResponse\x12\x1b\n" +
+	"\tprice_kzt\x18\x01 \x01(\x05R\bpriceKzt\x12\x1f\n" +
+	"\vdistance_km\x18\x02 \x01(\x01R\n" +
+	"distanceKm*}\n" +
 	"\n" +
 	"TripStatus\x12\x16\n" +
 	"\x12STATUS_UNSPECIFIED\x10\x00\x12\r\n" +
@@ -595,13 +726,14 @@ const file_trip_proto_rawDesc = "" +
 	"\aARRIVED\x10\x03\x12\x0f\n" +
 	"\vIN_PROGRESS\x10\x04\x12\r\n" +
 	"\tCOMPLETED\x10\x05\x12\r\n" +
-	"\tCANCELLED\x10\x062\xb4\x02\n" +
+	"\tCANCELLED\x10\x062\xf3\x02\n" +
 	"\vTripService\x129\n" +
 	"\n" +
 	"CreateTrip\x12\x17.trip.CreateTripRequest\x1a\x12.trip.TripResponse\x129\n" +
 	"\n" +
 	"AcceptTrip\x12\x17.trip.AcceptTripRequest\x1a\x12.trip.TripResponse\x123\n" +
-	"\aGetTrip\x12\x14.trip.GetTripRequest\x1a\x12.trip.TripResponse\x12?\n" +
+	"\aGetTrip\x12\x14.trip.GetTripRequest\x1a\x12.trip.TripResponse\x12=\n" +
+	"\fEstimateTrip\x12\x15.trip.EstimateRequest\x1a\x16.trip.EstimateResponse\x12?\n" +
 	"\fSendLocation\x12\x15.trip.LocationRequest\x1a\x16.google.protobuf.Empty(\x01\x129\n" +
 	"\tTrackTrip\x12\x12.trip.TrackRequest\x1a\x16.trip.LocationResponse0\x01B\x12Z\x10gen/trip-serviceb\x06proto3"
 
@@ -618,7 +750,7 @@ func file_trip_proto_rawDescGZIP() []byte {
 }
 
 var file_trip_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_trip_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_trip_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_trip_proto_goTypes = []any{
 	(TripStatus)(0),           // 0: trip.TripStatus
 	(*CreateTripRequest)(nil), // 1: trip.CreateTripRequest
@@ -628,25 +760,29 @@ var file_trip_proto_goTypes = []any{
 	(*LocationRequest)(nil),   // 5: trip.LocationRequest
 	(*TrackRequest)(nil),      // 6: trip.TrackRequest
 	(*LocationResponse)(nil),  // 7: trip.LocationResponse
-	(*emptypb.Empty)(nil),     // 8: google.protobuf.Empty
+	(*EstimateRequest)(nil),   // 8: trip.EstimateRequest
+	(*EstimateResponse)(nil),  // 9: trip.EstimateResponse
+	(*emptypb.Empty)(nil),     // 10: google.protobuf.Empty
 }
 var file_trip_proto_depIdxs = []int32{
-	0, // 0: trip.TripResponse.status:type_name -> trip.TripStatus
-	1, // 1: trip.TripService.CreateTrip:input_type -> trip.CreateTripRequest
-	2, // 2: trip.TripService.AcceptTrip:input_type -> trip.AcceptTripRequest
-	3, // 3: trip.TripService.GetTrip:input_type -> trip.GetTripRequest
-	5, // 4: trip.TripService.SendLocation:input_type -> trip.LocationRequest
-	6, // 5: trip.TripService.TrackTrip:input_type -> trip.TrackRequest
-	4, // 6: trip.TripService.CreateTrip:output_type -> trip.TripResponse
-	4, // 7: trip.TripService.AcceptTrip:output_type -> trip.TripResponse
-	4, // 8: trip.TripService.GetTrip:output_type -> trip.TripResponse
-	8, // 9: trip.TripService.SendLocation:output_type -> google.protobuf.Empty
-	7, // 10: trip.TripService.TrackTrip:output_type -> trip.LocationResponse
-	6, // [6:11] is the sub-list for method output_type
-	1, // [1:6] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	0,  // 0: trip.TripResponse.status:type_name -> trip.TripStatus
+	1,  // 1: trip.TripService.CreateTrip:input_type -> trip.CreateTripRequest
+	2,  // 2: trip.TripService.AcceptTrip:input_type -> trip.AcceptTripRequest
+	3,  // 3: trip.TripService.GetTrip:input_type -> trip.GetTripRequest
+	8,  // 4: trip.TripService.EstimateTrip:input_type -> trip.EstimateRequest
+	5,  // 5: trip.TripService.SendLocation:input_type -> trip.LocationRequest
+	6,  // 6: trip.TripService.TrackTrip:input_type -> trip.TrackRequest
+	4,  // 7: trip.TripService.CreateTrip:output_type -> trip.TripResponse
+	4,  // 8: trip.TripService.AcceptTrip:output_type -> trip.TripResponse
+	4,  // 9: trip.TripService.GetTrip:output_type -> trip.TripResponse
+	9,  // 10: trip.TripService.EstimateTrip:output_type -> trip.EstimateResponse
+	10, // 11: trip.TripService.SendLocation:output_type -> google.protobuf.Empty
+	7,  // 12: trip.TripService.TrackTrip:output_type -> trip.LocationResponse
+	7,  // [7:13] is the sub-list for method output_type
+	1,  // [1:7] is the sub-list for method input_type
+	1,  // [1:1] is the sub-list for extension type_name
+	1,  // [1:1] is the sub-list for extension extendee
+	0,  // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_trip_proto_init() }
@@ -660,7 +796,7 @@ func file_trip_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_trip_proto_rawDesc), len(file_trip_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   7,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
