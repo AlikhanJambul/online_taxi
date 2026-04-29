@@ -17,14 +17,17 @@ service TripService {
   // 3. Получить инфу по конкретной поездке
   rpc GetTrip (GetTripRequest) returns (TripResponse);
 
+  // 4. Узнать стоимость поездки
+  rpc EstimateTrip(EstimateRequest) returns (EstimateResponse);
+
 
   // --- Реалтайм (Стриминг) ---
 
-  // 4. Водитель постоянно шлет свои координаты (Client Streaming)
+  // 5. Водитель постоянно шлет свои координаты (Client Streaming)
   // Ключевое слово stream в запросе значит, что клиент открывает трубу и пуляет данные
   rpc SendLocation (stream LocationRequest) returns (google.protobuf.Empty);
 
-  // 5. Пассажир слушает перемещения водителя (Server Streaming)
+  // 6. Пассажир слушает перемещения водителя (Server Streaming)
   // Ключевое слово stream в ответе значит, что сервер постоянно отдает данные клиенту
   rpc TrackTrip (TrackRequest) returns (stream LocationResponse);
 }
@@ -84,4 +87,16 @@ message TrackRequest {
 message LocationResponse {
   double lat = 1;
   double lng = 2;
+}
+
+message EstimateRequest {
+  double pickup_lat = 1;
+  double pickup_lng = 2;
+  double dest_lat = 3;
+  double dest_lng = 4;
+}
+
+message EstimateResponse {
+  int32 price_kzt = 1;
+  double distance_km = 2;
 }

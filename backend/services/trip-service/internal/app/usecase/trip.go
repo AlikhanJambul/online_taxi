@@ -13,6 +13,7 @@ type Service interface {
 	CreateTrip(ctx context.Context, dto CreateTripDTO) (*domain.Trip, error)
 	AcceptTrip(ctx context.Context, dto AcceptTripDTO) (*domain.Trip, error)
 	GetTrip(ctx context.Context, tripID string) (*domain.Trip, error)
+	EstimatePrice(dto EstimatePriceReqDTO) domain.PriceEstimate
 
 	ProcessLocation(ctx context.Context, loc LocationDTO)
 	SubscribeToTrip(tripID string) <-chan LocationDTO
@@ -188,8 +189,10 @@ func (s *service) FindAndNotifyDrivers(ctx context.Context, trip *domain.Trip) e
 		return err
 	}
 
-	//for _, r := range deadTokens {
-	//	//TODO: delete tokens from db
-	//}
+	// TODO: delete tokens from db
 	return nil
+}
+
+func (s *service) EstimatePrice(dto EstimatePriceReqDTO) domain.PriceEstimate {
+	return domain.CalculatePrice(dto.PickupLat, dto.PickupLng, dto.DestLat, dto.DestLng)
 }

@@ -24,3 +24,12 @@ func toAcceptDTO(req *pb.AcceptTripRequest, userID string) usecase.AcceptTripDTO
 		DriverID: userID,
 	}
 }
+
+func toEstimateDTO(req *pb.EstimateRequest) usecase.EstimatePriceReqDTO {
+	return usecase.EstimatePriceReqDTO{
+		PickupLat: req.PickupLat,
+		PickupLng: req.PickupLng,
+		DestLat:   req.DestLat,
+		DestLng:   req.DestLng,
+	}
+}
