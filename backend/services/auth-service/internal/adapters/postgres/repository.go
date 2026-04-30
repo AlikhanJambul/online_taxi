@@ -95,7 +95,7 @@ func (r *repository) ClearSession(ctx context.Context, refreshToken string) erro
 
 	tag, err := r.db.Exec(ctx, query, refreshToken)
 	if err != nil {
-		return domain.ErrInternalError
+		return domain.ErrInternal
 	}
 
 	if tag.RowsAffected() == 0 {

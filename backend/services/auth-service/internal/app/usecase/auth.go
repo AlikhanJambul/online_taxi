@@ -2,13 +2,14 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"online_taxi/services/auth-service/internal/domain"
 	"online_taxi/services/shared/jwt"
+	"online_taxi/services/shared/minio"
+	"time"
 )
-
-var instance string = "service:"
 
 type Service interface {
 	CreateUser(ctx context.Context, dto RegisterRequestDTO) (*AuthResponseDTO, error)
@@ -16,15 +17,18 @@ type Service interface {
 	ClearSession(ctx context.Context, dto LogoutRequestDTO) error
 	RefreshToken(ctx context.Context, dto RefreshRequestDTO) (*RefreshResponseDTO, error)
 	UpdateFCMToken(ctx context.Context, dto UpdateFCMRequestDTO) error
+	GetAvatarUploadURL(ctx context.Context, expiry time.Duration) (string, string, error)
 }
 
 type service struct {
-	repo domain.Repository
-	tm   *jwt.TokenManager
+	repo        domain.Repository
+	tm          *jwt.TokenManager
+	fileStorage minio.FileStorage
+	minioPort   string
 }
 
-func NewService(repo domain.Repository, tm *jwt.TokenManager) Service {
-	return &service{repo: repo, tm: tm}
+func NewService(repo domain.Repository, tm *jwt.TokenManager, fileStorage minio.FileStorage, minioPort string) Service {
+	return &service{repo: repo, tm: tm, fileStorage: fileStorage, minioPort: minioPort}
 }
 
 func (s *service) CreateUser(ctx context.Context, dto RegisterRequestDTO) (*AuthResponseDTO, error) {
@@ -124,4 +128,20 @@ func (s *service) UpdateFCMToken(ctx context.Context, dto UpdateFCMRequestDTO) e
 	}
 
 	return s.repo.UpdateFCMToken(ctx, dto.UserID, dto.DeviceID, dto.FCMToken)
+}
+
+func (s *service) GetAvatarUploadURL(ctx context.Context, expiry time.Duration) (string, string, error) {
+	str := uuid.New().String()
+
+	objectName := fmt.Sprintf("%s/avatars.jpg", str)
+
+	uploadURL, err := s.fileStorage.GenerateUploadURL(ctx, "avatars", objectName, expiry)
+	if err != nil {
+		return "", "", err
+	}
+
+	// TODO: Нужно менять на ip компа
+	fileURL := fmt.Sprintf("http://minio:%s/avatars/%s", s.minioPort, objectName)
+
+	return uploadURL, fileURL, nil
 }

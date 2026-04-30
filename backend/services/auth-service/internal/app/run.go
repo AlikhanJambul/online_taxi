@@ -7,6 +7,7 @@ import (
 	"online_taxi/services/auth-service/internal/transport/grpc/interceptors"
 	"online_taxi/services/shared/jwt"
 	"online_taxi/services/shared/logger"
+	"online_taxi/services/shared/minio"
 	"time"
 
 	"google.golang.org/grpc"
@@ -30,9 +31,13 @@ func Run() {
 	}
 	defer db.Close()
 
+	// TODO: возможно заменить на ip компа
+	endpoint := fmt.Sprintf("minio:%s", cfg.S3.Port)
+
 	tm := jwt.NewTokenManager(cfg.SecretKey)
+	s3Storage, err := minio.NewFileStorage(endpoint, cfg.S3.User, cfg.S3.Password, "avatars")
 	repo := postgres.NewRepository(db)
-	service := usecase.NewService(repo, tm)
+	service := usecase.NewService(repo, tm, s3Storage, cfg.S3.Port)
 
 	h := grpcHandler.NewHandler(service, newLogger)
 

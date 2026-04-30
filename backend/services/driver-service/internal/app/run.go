@@ -28,6 +28,7 @@ func Run() {
 	}
 	defer db.Close()
 
+	// TODO: возможно заменить на ip компа
 	endpoint := fmt.Sprintf("minio:%s", cfg.S3.Port)
 
 	tm := jwt.NewTokenManager(cfg.SecretKey)
