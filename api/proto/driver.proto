@@ -8,8 +8,8 @@ import "google/protobuf/empty.proto";
 
 service DriverService {
   rpc CreateProfile (CreateProfileRequest) returns (DriverProfileResponse);
-
   rpc GetProfile (google.protobuf.Empty) returns (DriverProfileResponse);
+  rpc GetCarUploadURL (google.protobuf.Empty) returns (GetUploadURLResponse);
 }
 
 enum DriverStatus {
@@ -34,4 +34,9 @@ message DriverProfileResponse {
   string license_plate = 5;
   string car_url = 6;
   DriverStatus status = 7;
+}
+
+message GetUploadURLResponse {
+  string upload_url = 1;
+  string file_url   = 2;
 }

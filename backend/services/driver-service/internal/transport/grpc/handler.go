@@ -10,6 +10,7 @@ import (
 	"online_taxi/services/driver-service/internal/app/usecase"
 	"online_taxi/services/driver-service/internal/domain"
 	loggerPkg "online_taxi/services/shared/logger"
+	"time"
 )
 
 type Handler struct {
@@ -65,6 +66,25 @@ func (h *Handler) GetProfile(ctx context.Context, req *emptypb.Empty) (*pb.Drive
 		CarColor:     resp.CarColor,
 		LicensePlate: resp.LicensePlate,
 		Status:       parseStatus(resp.Status),
+	}, nil
+}
+
+func (h *Handler) GetCarUploadURL(ctx context.Context, req *emptypb.Empty) (*pb.GetUploadURLResponse, error) {
+	id, ok := ctx.Value("userID").(string)
+	if !ok || id == "" {
+		h.logger.Warn("пользователь не авторизован")
+		return nil, status.Error(codes.Unauthenticated, domain.ErrUnauth.Error())
+	}
+
+	uploadURL, fileURL, err := h.service.GetCarUploadURL(ctx, time.Minute*15)
+	if err != nil {
+		h.logger.Warn("ошибка с получением ссылки: %v", err)
+		return nil, status.Error(codes.Internal, domain.ErrInternal.Error())
+	}
+
+	return &pb.GetUploadURLResponse{
+		UploadUrl: uploadURL,
+		FileUrl:   fileURL,
 	}, nil
 }
 

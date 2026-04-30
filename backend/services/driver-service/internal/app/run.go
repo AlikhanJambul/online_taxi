@@ -6,7 +6,6 @@ import (
 	"log"
 	"net"
 	pb "online_taxi/gen/driver-service"
-	"online_taxi/services/driver-service/internal/adapters/minio"
 	"online_taxi/services/driver-service/internal/adapters/postgres"
 	"online_taxi/services/driver-service/internal/app/usecase"
 	grpcHandler "online_taxi/services/driver-service/internal/transport/grpc"
@@ -15,6 +14,7 @@ import (
 	"online_taxi/services/shared/database"
 	"online_taxi/services/shared/jwt"
 	"online_taxi/services/shared/logger"
+	"online_taxi/services/shared/minio"
 	"time"
 )
 
@@ -31,9 +31,9 @@ func Run() {
 	endpoint := fmt.Sprintf("minio:%s", cfg.S3.Port)
 
 	tm := jwt.NewTokenManager(cfg.SecretKey)
-	s3Storage, err := minio.NewFileStorage(endpoint, cfg.S3.User, cfg.S3.Password)
+	s3Storage, err := minio.NewFileStorage(endpoint, cfg.S3.User, cfg.S3.Password, "cars")
 	repo := postgres.NewRepo(db)
-	service := usecase.NewService(repo, s3Storage)
+	service := usecase.NewService(repo, s3Storage, cfg.S3.Port)
 
 	h := grpcHandler.NewHandler(service, newLogger)
 

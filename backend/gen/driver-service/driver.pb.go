@@ -144,12 +144,13 @@ func (x *CreateProfileRequest) GetLicensePlate() string {
 
 type DriverProfileResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // А вот в ответе он есть
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	CarMake       string                 `protobuf:"bytes,2,opt,name=car_make,json=carMake,proto3" json:"car_make,omitempty"`
 	CarModel      string                 `protobuf:"bytes,3,opt,name=car_model,json=carModel,proto3" json:"car_model,omitempty"`
 	CarColor      string                 `protobuf:"bytes,4,opt,name=car_color,json=carColor,proto3" json:"car_color,omitempty"`
 	LicensePlate  string                 `protobuf:"bytes,5,opt,name=license_plate,json=licensePlate,proto3" json:"license_plate,omitempty"`
-	Status        DriverStatus           `protobuf:"varint,6,opt,name=status,proto3,enum=driver.DriverStatus" json:"status,omitempty"`
+	CarUrl        string                 `protobuf:"bytes,6,opt,name=car_url,json=carUrl,proto3" json:"car_url,omitempty"`
+	Status        DriverStatus           `protobuf:"varint,7,opt,name=status,proto3,enum=driver.DriverStatus" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -219,11 +220,70 @@ func (x *DriverProfileResponse) GetLicensePlate() string {
 	return ""
 }
 
+func (x *DriverProfileResponse) GetCarUrl() string {
+	if x != nil {
+		return x.CarUrl
+	}
+	return ""
+}
+
 func (x *DriverProfileResponse) GetStatus() DriverStatus {
 	if x != nil {
 		return x.Status
 	}
 	return DriverStatus_STATUS_UNSPECIFIED
+}
+
+type GetUploadURLResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UploadUrl     string                 `protobuf:"bytes,1,opt,name=upload_url,json=uploadUrl,proto3" json:"upload_url,omitempty"`
+	FileUrl       string                 `protobuf:"bytes,2,opt,name=file_url,json=fileUrl,proto3" json:"file_url,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUploadURLResponse) Reset() {
+	*x = GetUploadURLResponse{}
+	mi := &file_driver_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUploadURLResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUploadURLResponse) ProtoMessage() {}
+
+func (x *GetUploadURLResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_driver_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUploadURLResponse.ProtoReflect.Descriptor instead.
+func (*GetUploadURLResponse) Descriptor() ([]byte, []int) {
+	return file_driver_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GetUploadURLResponse) GetUploadUrl() string {
+	if x != nil {
+		return x.UploadUrl
+	}
+	return ""
+}
+
+func (x *GetUploadURLResponse) GetFileUrl() string {
+	if x != nil {
+		return x.FileUrl
+	}
+	return ""
 }
 
 var File_driver_proto protoreflect.FileDescriptor
@@ -235,23 +295,29 @@ const file_driver_proto_rawDesc = "" +
 	"\bcar_make\x18\x01 \x01(\tR\acarMake\x12\x1b\n" +
 	"\tcar_model\x18\x02 \x01(\tR\bcarModel\x12\x1b\n" +
 	"\tcar_color\x18\x03 \x01(\tR\bcarColor\x12#\n" +
-	"\rlicense_plate\x18\x04 \x01(\tR\flicensePlate\"\xd8\x01\n" +
+	"\rlicense_plate\x18\x04 \x01(\tR\flicensePlate\"\xf1\x01\n" +
 	"\x15DriverProfileResponse\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x19\n" +
 	"\bcar_make\x18\x02 \x01(\tR\acarMake\x12\x1b\n" +
 	"\tcar_model\x18\x03 \x01(\tR\bcarModel\x12\x1b\n" +
 	"\tcar_color\x18\x04 \x01(\tR\bcarColor\x12#\n" +
-	"\rlicense_plate\x18\x05 \x01(\tR\flicensePlate\x12,\n" +
-	"\x06status\x18\x06 \x01(\x0e2\x14.driver.DriverStatusR\x06status*O\n" +
+	"\rlicense_plate\x18\x05 \x01(\tR\flicensePlate\x12\x17\n" +
+	"\acar_url\x18\x06 \x01(\tR\x06carUrl\x12,\n" +
+	"\x06status\x18\a \x01(\x0e2\x14.driver.DriverStatusR\x06status\"P\n" +
+	"\x14GetUploadURLResponse\x12\x1d\n" +
+	"\n" +
+	"upload_url\x18\x01 \x01(\tR\tuploadUrl\x12\x19\n" +
+	"\bfile_url\x18\x02 \x01(\tR\afileUrl*O\n" +
 	"\fDriverStatus\x12\x16\n" +
 	"\x12STATUS_UNSPECIFIED\x10\x00\x12\v\n" +
 	"\aPENDING\x10\x01\x12\f\n" +
 	"\bAPPROVED\x10\x02\x12\f\n" +
-	"\bREJECTED\x10\x032\xa2\x01\n" +
+	"\bREJECTED\x10\x032\xeb\x01\n" +
 	"\rDriverService\x12L\n" +
 	"\rCreateProfile\x12\x1c.driver.CreateProfileRequest\x1a\x1d.driver.DriverProfileResponse\x12C\n" +
 	"\n" +
-	"GetProfile\x12\x16.google.protobuf.Empty\x1a\x1d.driver.DriverProfileResponseB\x14Z\x12gen/driver-serviceb\x06proto3"
+	"GetProfile\x12\x16.google.protobuf.Empty\x1a\x1d.driver.DriverProfileResponse\x12G\n" +
+	"\x0fGetCarUploadURL\x12\x16.google.protobuf.Empty\x1a\x1c.driver.GetUploadURLResponseB\x14Z\x12gen/driver-serviceb\x06proto3"
 
 var (
 	file_driver_proto_rawDescOnce sync.Once
@@ -266,21 +332,24 @@ func file_driver_proto_rawDescGZIP() []byte {
 }
 
 var file_driver_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_driver_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_driver_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_driver_proto_goTypes = []any{
 	(DriverStatus)(0),             // 0: driver.DriverStatus
 	(*CreateProfileRequest)(nil),  // 1: driver.CreateProfileRequest
 	(*DriverProfileResponse)(nil), // 2: driver.DriverProfileResponse
-	(*emptypb.Empty)(nil),         // 3: google.protobuf.Empty
+	(*GetUploadURLResponse)(nil),  // 3: driver.GetUploadURLResponse
+	(*emptypb.Empty)(nil),         // 4: google.protobuf.Empty
 }
 var file_driver_proto_depIdxs = []int32{
 	0, // 0: driver.DriverProfileResponse.status:type_name -> driver.DriverStatus
 	1, // 1: driver.DriverService.CreateProfile:input_type -> driver.CreateProfileRequest
-	3, // 2: driver.DriverService.GetProfile:input_type -> google.protobuf.Empty
-	2, // 3: driver.DriverService.CreateProfile:output_type -> driver.DriverProfileResponse
-	2, // 4: driver.DriverService.GetProfile:output_type -> driver.DriverProfileResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
+	4, // 2: driver.DriverService.GetProfile:input_type -> google.protobuf.Empty
+	4, // 3: driver.DriverService.GetCarUploadURL:input_type -> google.protobuf.Empty
+	2, // 4: driver.DriverService.CreateProfile:output_type -> driver.DriverProfileResponse
+	2, // 5: driver.DriverService.GetProfile:output_type -> driver.DriverProfileResponse
+	3, // 6: driver.DriverService.GetCarUploadURL:output_type -> driver.GetUploadURLResponse
+	4, // [4:7] is the sub-list for method output_type
+	1, // [1:4] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
 	1, // [1:1] is the sub-list for extension extendee
 	0, // [0:1] is the sub-list for field type_name
@@ -297,7 +366,7 @@ func file_driver_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_driver_proto_rawDesc), len(file_driver_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
