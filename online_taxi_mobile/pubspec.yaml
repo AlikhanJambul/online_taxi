@@ -1,0 +1,53 @@
+name: online_taxi_mobile
+description: Taxi application for passengers and drivers
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # gRPC
+  grpc: ^3.2.4
+  protobuf: ^3.1.0
+
+  # State management
+  flutter_riverpod: ^2.5.1
+
+  # Navigation
+  go_router: ^13.2.0
+
+  # Firebase / Push notifications
+  firebase_core: ^2.27.1
+  firebase_messaging: ^14.7.20
+
+  # Maps
+  yandex_mapkit: ^3.3.0
+
+  # Device info
+  device_info_plus: ^10.1.0
+
+  # Secure storage
+  flutter_secure_storage: ^9.0.0
+
+  # Location (GPS)
+  geolocator: ^12.0.0
+  geocoding: ^3.0.0
+
+  # UUID
+  uuid: ^4.4.0
+
+  # UI
+  cupertino_icons: ^1.0.6
+  flutter_svg: ^2.0.10+1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
