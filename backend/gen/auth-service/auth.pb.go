@@ -486,6 +486,58 @@ func (x *LogoutRequest) GetRefreshToken() string {
 	return ""
 }
 
+type GetUploadURLResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UploadUrl     string                 `protobuf:"bytes,1,opt,name=upload_url,json=uploadUrl,proto3" json:"upload_url,omitempty"`
+	FileUrl       string                 `protobuf:"bytes,2,opt,name=file_url,json=fileUrl,proto3" json:"file_url,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUploadURLResponse) Reset() {
+	*x = GetUploadURLResponse{}
+	mi := &file_auth_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUploadURLResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUploadURLResponse) ProtoMessage() {}
+
+func (x *GetUploadURLResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUploadURLResponse.ProtoReflect.Descriptor instead.
+func (*GetUploadURLResponse) Descriptor() ([]byte, []int) {
+	return file_auth_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GetUploadURLResponse) GetUploadUrl() string {
+	if x != nil {
+		return x.UploadUrl
+	}
+	return ""
+}
+
+func (x *GetUploadURLResponse) GetFileUrl() string {
+	if x != nil {
+		return x.FileUrl
+	}
+	return ""
+}
+
 var File_auth_proto protoreflect.FileDescriptor
 
 const file_auth_proto_rawDesc = "" +
@@ -520,19 +572,24 @@ const file_auth_proto_rawDesc = "" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
 	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\"4\n" +
 	"\rLogoutRequest\x12#\n" +
-	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken*B\n" +
+	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"P\n" +
+	"\x14GetUploadURLResponse\x12\x1d\n" +
+	"\n" +
+	"upload_url\x18\x01 \x01(\tR\tuploadUrl\x12\x19\n" +
+	"\bfile_url\x18\x02 \x01(\tR\afileUrl*B\n" +
 	"\x04Role\x12\x14\n" +
 	"\x10ROLE_UNSPECIFIED\x10\x00\x12\r\n" +
 	"\tPASSENGER\x10\x01\x12\n" +
 	"\n" +
 	"\x06DRIVER\x10\x02\x12\t\n" +
-	"\x05ADMIN\x10\x032\xa6\x02\n" +
+	"\x05ADMIN\x10\x032\xf1\x02\n" +
 	"\vAuthService\x125\n" +
 	"\bRegister\x12\x15.auth.RegisterRequest\x1a\x12.auth.AuthResponse\x12/\n" +
 	"\x05Login\x12\x12.auth.LoginRequest\x1a\x12.auth.AuthResponse\x126\n" +
 	"\aRefresh\x12\x14.auth.RefreshRequest\x1a\x15.auth.RefreshResponse\x125\n" +
 	"\x06Logout\x12\x13.auth.LogoutRequest\x1a\x16.google.protobuf.Empty\x12@\n" +
-	"\x0eUpdateFCMToken\x12\x16.auth.UpdateFCMRequest\x1a\x16.google.protobuf.EmptyB\x12Z\x10gen/auth-serviceb\x06proto3"
+	"\x0eUpdateFCMToken\x12\x16.auth.UpdateFCMRequest\x1a\x16.google.protobuf.Empty\x12I\n" +
+	"\x13GetAvatarsUploadURL\x12\x16.google.protobuf.Empty\x1a\x1a.auth.GetUploadURLResponseB\x12Z\x10gen/auth-serviceb\x06proto3"
 
 var (
 	file_auth_proto_rawDescOnce sync.Once
@@ -547,17 +604,18 @@ func file_auth_proto_rawDescGZIP() []byte {
 }
 
 var file_auth_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_auth_proto_goTypes = []any{
-	(Role)(0),                // 0: auth.Role
-	(*RegisterRequest)(nil),  // 1: auth.RegisterRequest
-	(*LoginRequest)(nil),     // 2: auth.LoginRequest
-	(*UpdateFCMRequest)(nil), // 3: auth.UpdateFCMRequest
-	(*AuthResponse)(nil),     // 4: auth.AuthResponse
-	(*RefreshRequest)(nil),   // 5: auth.RefreshRequest
-	(*RefreshResponse)(nil),  // 6: auth.RefreshResponse
-	(*LogoutRequest)(nil),    // 7: auth.LogoutRequest
-	(*emptypb.Empty)(nil),    // 8: google.protobuf.Empty
+	(Role)(0),                    // 0: auth.Role
+	(*RegisterRequest)(nil),      // 1: auth.RegisterRequest
+	(*LoginRequest)(nil),         // 2: auth.LoginRequest
+	(*UpdateFCMRequest)(nil),     // 3: auth.UpdateFCMRequest
+	(*AuthResponse)(nil),         // 4: auth.AuthResponse
+	(*RefreshRequest)(nil),       // 5: auth.RefreshRequest
+	(*RefreshResponse)(nil),      // 6: auth.RefreshResponse
+	(*LogoutRequest)(nil),        // 7: auth.LogoutRequest
+	(*GetUploadURLResponse)(nil), // 8: auth.GetUploadURLResponse
+	(*emptypb.Empty)(nil),        // 9: google.protobuf.Empty
 }
 var file_auth_proto_depIdxs = []int32{
 	0, // 0: auth.RegisterRequest.role:type_name -> auth.Role
@@ -567,13 +625,15 @@ var file_auth_proto_depIdxs = []int32{
 	5, // 4: auth.AuthService.Refresh:input_type -> auth.RefreshRequest
 	7, // 5: auth.AuthService.Logout:input_type -> auth.LogoutRequest
 	3, // 6: auth.AuthService.UpdateFCMToken:input_type -> auth.UpdateFCMRequest
-	4, // 7: auth.AuthService.Register:output_type -> auth.AuthResponse
-	4, // 8: auth.AuthService.Login:output_type -> auth.AuthResponse
-	6, // 9: auth.AuthService.Refresh:output_type -> auth.RefreshResponse
-	8, // 10: auth.AuthService.Logout:output_type -> google.protobuf.Empty
-	8, // 11: auth.AuthService.UpdateFCMToken:output_type -> google.protobuf.Empty
-	7, // [7:12] is the sub-list for method output_type
-	2, // [2:7] is the sub-list for method input_type
+	9, // 7: auth.AuthService.GetAvatarsUploadURL:input_type -> google.protobuf.Empty
+	4, // 8: auth.AuthService.Register:output_type -> auth.AuthResponse
+	4, // 9: auth.AuthService.Login:output_type -> auth.AuthResponse
+	6, // 10: auth.AuthService.Refresh:output_type -> auth.RefreshResponse
+	9, // 11: auth.AuthService.Logout:output_type -> google.protobuf.Empty
+	9, // 12: auth.AuthService.UpdateFCMToken:output_type -> google.protobuf.Empty
+	8, // 13: auth.AuthService.GetAvatarsUploadURL:output_type -> auth.GetUploadURLResponse
+	8, // [8:14] is the sub-list for method output_type
+	2, // [2:8] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
 	2, // [2:2] is the sub-list for extension extendee
 	0, // [0:2] is the sub-list for field type_name
@@ -590,7 +650,7 @@ func file_auth_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_auth_proto_rawDesc), len(file_auth_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   7,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

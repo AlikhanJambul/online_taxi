@@ -10,6 +10,7 @@ import (
 	"online_taxi/services/auth-service/internal/app/usecase"
 	"online_taxi/services/auth-service/internal/domain"
 	loggerPkg "online_taxi/services/shared/logger"
+	"time"
 )
 
 type Handler struct {
@@ -32,7 +33,7 @@ func (h *Handler) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.Au
 	res, err := h.service.CreateUser(ctx, dto)
 	if err != nil {
 		h.logger.Error("ошибка при регистрации: %v", err)
-		return nil, status.Error(codes.Internal, domain.ErrInternalError.Error())
+		return nil, status.Error(codes.Internal, domain.ErrInternal.Error())
 	}
 
 	return &pb.AuthResponse{
@@ -60,7 +61,7 @@ func (h *Handler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.AuthResp
 		}
 
 		h.logger.Error("ошибка при входе: %v", err)
-		return nil, status.Error(codes.Internal, domain.ErrInternalError.Error())
+		return nil, status.Error(codes.Internal, domain.ErrInternal.Error())
 
 	}
 
@@ -110,7 +111,7 @@ func (h *Handler) Refresh(ctx context.Context, req *pb.RefreshRequest) (*pb.Refr
 		}
 
 		h.logger.Error("ошибка генерации нового токена: %v", err)
-		return nil, status.Error(codes.Internal, domain.ErrInternalError.Error())
+		return nil, status.Error(codes.Internal, domain.ErrInternal.Error())
 	}
 
 	return &pb.RefreshResponse{
@@ -122,7 +123,7 @@ func (h *Handler) Refresh(ctx context.Context, req *pb.RefreshRequest) (*pb.Refr
 func (h *Handler) UpdateFCMToken(ctx context.Context, req *pb.UpdateFCMRequest) (*emptypb.Empty, error) {
 	userID, ok := ctx.Value("userID").(string)
 	if !ok || userID == "" {
-		return nil, status.Error(codes.Internal, domain.ErrInternalError.Error())
+		return nil, status.Error(codes.Internal, domain.ErrInternal.Error())
 	}
 
 	dto := toUpdateFCMDTO(req)
@@ -134,14 +135,33 @@ func (h *Handler) UpdateFCMToken(ctx context.Context, req *pb.UpdateFCMRequest) 
 
 		if errors.Is(err, domain.ErrInvalidData) {
 			h.logger.Warn("пользователь %s: ошибка с обновлением fcm_token: %v", dto.UserID, err)
-			return nil, status.Error(codes.Internal, domain.ErrInternalError.Error())
+			return nil, status.Error(codes.Internal, domain.ErrInternal.Error())
 		}
 
 		h.logger.Error("пользователь %s: критическая ошибка обновления fcm token: %v", dto.UserID, err)
-		return nil, status.Error(codes.Internal, domain.ErrInternalError.Error())
+		return nil, status.Error(codes.Internal, domain.ErrInternal.Error())
 	}
 
 	return nil, nil
+}
+
+func (h *Handler) GetAvatarUploadURL(ctx context.Context, req *emptypb.Empty) (*pb.GetUploadURLResponse, error) {
+	id, ok := ctx.Value("userID").(string)
+	if !ok || id == "" {
+		h.logger.Warn("пользователь не авторизован")
+		return nil, status.Error(codes.Unauthenticated, domain.ErrUnauth.Error())
+	}
+
+	uploadURL, fileURL, err := h.service.GetAvatarUploadURL(ctx, time.Minute*15)
+	if err != nil {
+		h.logger.Warn("ошибка с получением ссылки: %v", err)
+		return nil, status.Error(codes.Internal, domain.ErrInternal.Error())
+	}
+
+	return &pb.GetUploadURLResponse{
+		UploadUrl: uploadURL,
+		FileUrl:   fileURL,
+	}, nil
 }
 
 func parseRole(role string) pb.Role {
