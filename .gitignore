@@ -4,3 +4,4 @@ message.txt
 serviceAccountKey.json
 google-services.json
 GoogleService-Info.plist
+.claude/

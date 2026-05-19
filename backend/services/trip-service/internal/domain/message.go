@@ -64,3 +64,21 @@ func NotifyTripCancelled() PushNotification {
 		Body:  "Поездка была отменена",
 	}
 }
+
+// NotifyByStatus возвращает уведомление для пассажира на основе нового статуса поездки.
+func NotifyByStatus(status TripStatus) PushNotification {
+	switch status {
+	case StatusAccepted:
+		return NotifyDriverAccepted("Водитель")
+	case StatusArrived:
+		return NotifyDriverArrived()
+	case StatusInProgress:
+		return NotifyTripStarted()
+	case StatusCompleted:
+		return NotifyTripCompleted()
+	case StatusCancelled:
+		return NotifyTripCancelled()
+	default:
+		return PushNotification{}
+	}
+}

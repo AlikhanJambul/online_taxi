@@ -1,7 +1,8 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/grpc/grpc_client.dart';
-
-// TODO: import '../../../gen/trip.pbgrpc.dart';
+import '../../../gen/trip.pb.dart' as pb;
+import '../../../gen/trip.pbgrpc.dart';
 
 class IncomingTrip {
   final String id;
@@ -26,11 +27,51 @@ class DriverRepository {
   final GrpcClients _grpc;
   DriverRepository(this._grpc);
 
+  StreamController<pb.LocationRequest>? _locationCtrl;
+
+  TripServiceClient get _client =>
+      TripServiceClient(_grpc.trip, interceptors: [_grpc.interceptor]);
+
   Future<void> acceptTrip(String tripId) async {
-    // TODO: раскомментируй после генерации proto
-    // final client = TripServiceClient(_grpc.trip, interceptors: [_grpc.interceptor]);
-    // await client.acceptTrip(AcceptTripRequest(tripId: tripId));
-    await Future.delayed(const Duration(milliseconds: 600));
+    await _client.acceptTrip(pb.AcceptTripRequest(tripId: tripId));
+  }
+
+  Future<void> driverArrived(String tripId) async {
+    await _client.driverArrived(pb.TripIDRequest(tripId: tripId));
+  }
+
+  Future<void> startTrip(String tripId) async {
+    await _client.startTrip(pb.TripIDRequest(tripId: tripId));
+  }
+
+  Future<void> completeTrip(String tripId) async {
+    await _client.completeTrip(pb.TripIDRequest(tripId: tripId));
+  }
+
+  Future<void> cancelTrip(String tripId) async {
+    await _client.cancelTrip(pb.TripIDRequest(tripId: tripId));
+  }
+
+  // Открывает gRPC client-streaming канал для отправки координат
+  void startLocationStream() {
+    if (_locationCtrl != null && !_locationCtrl!.isClosed) return;
+    _locationCtrl = StreamController<pb.LocationRequest>();
+    _client.sendLocation(_locationCtrl!.stream);
+  }
+
+  // Отправляет одну точку. tripId пустой если водитель просто на линии.
+  void sendLocation(double lat, double lng, {String tripId = ''}) {
+    if (_locationCtrl == null || _locationCtrl!.isClosed) return;
+    _locationCtrl!.add(pb.LocationRequest(
+      tripId: tripId,
+      lat:    lat,
+      lng:    lng,
+    ));
+  }
+
+  Future<void> stopLocationStream() async {
+    await _locationCtrl?.close();
+    _locationCtrl = null;
   }
 }
 

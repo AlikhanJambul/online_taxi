@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart';
 import '../provider/trip_provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/map_markers.dart';
 
 class PassengerTripScreen extends ConsumerStatefulWidget {
   const PassengerTripScreen({super.key});
@@ -12,16 +13,38 @@ class PassengerTripScreen extends ConsumerStatefulWidget {
 }
 
 class _PassengerTripScreenState extends ConsumerState<PassengerTripScreen> {
+  YandexMapController? _mapCtrl;
+
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(passengerProvider);
-    final trip  = state.trip;
+    final state   = ref.watch(passengerProvider);
+    final trip    = state.trip;
+    final markers = ref.watch(mapMarkersProvider).valueOrNull;
+
+    // Когда поездка завершена или отменена — возвращаемся на карту
+    ref.listen(passengerProvider, (prev, next) {
+      if (prev?.status != PassengerFlowStatus.idle &&
+          next.status == PassengerFlowStatus.idle) {
+        context.go('/passenger');
+      }
+    });
+
+    // Двигаем камеру на водителя когда получили его координаты
+    if (state.driverLat != null && _mapCtrl != null) {
+      _mapCtrl!.moveCamera(
+        CameraUpdate.newCameraPosition(CameraPosition(
+          target: Point(latitude: state.driverLat!, longitude: state.driverLng!),
+          zoom: 15,
+        )),
+      );
+    }
 
     return Scaffold(
       body: Stack(
         children: [
           YandexMap(
             onMapCreated: (ctrl) {
+              _mapCtrl = ctrl;
               if (trip != null) {
                 ctrl.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
                   target: Point(latitude: trip.pickupLat, longitude: trip.pickupLng),
@@ -29,12 +52,27 @@ class _PassengerTripScreenState extends ConsumerState<PassengerTripScreen> {
                 )));
               }
             },
+            mapObjects: _buildMapObjects(state),
           ),
 
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: _StatusBadge(status: state.status),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                transitionBuilder: (child, anim) => FadeTransition(
+                  opacity: anim,
+                  child: SlideTransition(
+                    position: Tween<Offset>(begin: const Offset(0, -0.2), end: Offset.zero)
+                        .animate(CurvedAnimation(parent: anim, curve: Curves.easeOut)),
+                    child: child,
+                  ),
+                ),
+                child: _StatusBadge(
+                  key: ValueKey('${state.status}_${trip?.status}'),
+                  trip: trip, flowStatus: state.status,
+                ),
+              ),
             ),
           ),
 
@@ -71,20 +109,63 @@ class _PassengerTripScreenState extends ConsumerState<PassengerTripScreen> {
       ),
     );
   }
+
+  List<MapObject> _buildMapObjects(PassengerState state) {
+    final objects = <MapObject>[];
+    final m       = ref.read(mapMarkersProvider).valueOrNull;
+
+    if (state.pickupLat != null && m != null) {
+      objects.add(PlacemarkMapObject(
+        mapId: const MapObjectId('pickup'),
+        point: Point(latitude: state.pickupLat!, longitude: state.pickupLng!),
+        icon: PlacemarkIcon.single(PlacemarkIconStyle(image: BitmapDescriptor.fromBytes(m.pickup))),
+      ));
+    }
+
+    if (state.destLat != null && m != null) {
+      objects.add(PlacemarkMapObject(
+        mapId: const MapObjectId('dest'),
+        point: Point(latitude: state.destLat!, longitude: state.destLng!),
+        icon: PlacemarkIcon.single(PlacemarkIconStyle(image: BitmapDescriptor.fromBytes(m.destination))),
+      ));
+    }
+
+    // Маркер водителя — появляется когда начинаем получать его координаты
+    if (state.driverLat != null && m != null) {
+      objects.add(PlacemarkMapObject(
+        mapId: const MapObjectId('driver'),
+        point: Point(latitude: state.driverLat!, longitude: state.driverLng!),
+        icon: PlacemarkIcon.single(PlacemarkIconStyle(image: BitmapDescriptor.fromBytes(m.car))),
+      ));
+    }
+
+    return objects;
+  }
 }
 
 class _StatusBadge extends StatelessWidget {
-  final PassengerFlowStatus status;
-  const _StatusBadge({required this.status});
+  final Trip?                trip;
+  final PassengerFlowStatus  flowStatus;
+  const _StatusBadge({super.key, required this.trip, required this.flowStatus});
 
   @override
   Widget build(BuildContext context) {
-    final label = switch (status) {
-      PassengerFlowStatus.searching => 'Ищем водителя...',
-      PassengerFlowStatus.active    => 'Водитель едет',
-      _ => '',
-    };
-    if (label.isEmpty) return const SizedBox.shrink();
+    String label;
+    bool   loading = false;
+    Color  iconColor = AppTheme.primary;
+
+    if (flowStatus == PassengerFlowStatus.searching) {
+      label   = 'Ищем водителя...';
+      loading = true;
+    } else {
+      switch (trip?.status) {
+        case TripStatus.accepted:   label = 'Водитель едет к вам'; break;
+        case TripStatus.arrived:    label = 'Водитель ждёт вас'; iconColor = AppTheme.success; break;
+        case TripStatus.inProgress: label = 'Поездка началась'; break;
+        default:                    return const SizedBox.shrink();
+      }
+    }
+
     return Center(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -94,11 +175,11 @@ class _StatusBadge extends StatelessWidget {
           border: Border.all(color: AppTheme.border),
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
-          if (status == PassengerFlowStatus.searching)
+          if (loading)
             const SizedBox(width: 12, height: 12,
-              child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary)),
-          if (status == PassengerFlowStatus.active)
-            const Icon(Icons.directions_car_rounded, color: AppTheme.primary, size: 14),
+              child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary))
+          else
+            Icon(Icons.directions_car_rounded, color: iconColor, size: 14),
           const SizedBox(width: 8),
           Text(label, style: const TextStyle(
             color: AppTheme.textPrimary, fontSize: 13, fontWeight: FontWeight.w500)),
@@ -147,6 +228,15 @@ class _ActiveTripWidget extends StatelessWidget {
   final Trip trip;
   const _ActiveTripWidget({required this.trip});
 
+  String get _statusLabel {
+    switch (trip.status) {
+      case TripStatus.accepted:   return 'Водитель назначен';
+      case TripStatus.arrived:    return 'Водитель на месте';
+      case TripStatus.inProgress: return 'Поездка идёт';
+      default:                    return 'Водитель назначен';
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Column(children: [
     Row(children: [
@@ -159,13 +249,13 @@ class _ActiveTripWidget extends StatelessWidget {
         child: const Icon(Icons.person_rounded, color: AppTheme.textSecondary, size: 24),
       ),
       const SizedBox(width: 12),
-      const Expanded(child: Column(
+      Expanded(child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Водитель назначен', style: TextStyle(
+          Text(_statusLabel, style: const TextStyle(
             color: AppTheme.textPrimary, fontWeight: FontWeight.w600)),
-          SizedBox(height: 2),
-          Text('Toyota Camry • Белый', style: TextStyle(
+          const SizedBox(height: 2),
+          const Text('Toyota Camry • Белый', style: TextStyle(
             color: AppTheme.textSecondary, fontSize: 13)),
         ],
       )),

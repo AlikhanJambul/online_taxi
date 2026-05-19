@@ -32,7 +32,7 @@ func (r *repository) SaveDriver(ctx context.Context, driver *domain.Driver) (str
 	var status string
 
 	err := r.db.QueryRow(ctx, query,
-		driver.UserID, driver.CarMake, driver.CarModel, driver.CarColor, driver.LicensePlate, "http",
+		driver.UserID, driver.CarMake, driver.CarModel, driver.CarColor, driver.LicensePlate, "",
 	).Scan(&status)
 
 	if err != nil {
@@ -46,7 +46,7 @@ func (r *repository) GetDriver(ctx context.Context, id string) (*domain.Driver, 
 	query := `
 		SELECT user_id, car_make, car_model, car_color, license_plate, status
 		FROM driver_profiles
-		WHERE user_id = $2; 
+		WHERE user_id = $1;
 	`
 
 	var resp domain.Driver

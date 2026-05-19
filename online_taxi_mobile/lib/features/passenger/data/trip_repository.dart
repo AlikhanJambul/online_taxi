@@ -1,8 +1,8 @@
-import 'dart:math';
+import 'package:fixnum/fixnum.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/grpc/grpc_client.dart';
-
-// TODO: import '../../../gen/trip.pbgrpc.dart';
+import '../../../gen/trip.pb.dart' as pb;
+import '../../../gen/trip.pbgrpc.dart';
 
 enum TripStatus { searching, accepted, arrived, inProgress, completed, cancelled }
 
@@ -35,64 +35,87 @@ class Trip {
     required this.destLng,
     required this.priceKzt,
   });
+
+  Trip copyWith({TripStatus? status}) => Trip(
+    id: id, passengerId: passengerId, driverId: driverId,
+    status: status ?? this.status,
+    pickupAddress: pickupAddress, destAddress: destAddress,
+    pickupLat: pickupLat, pickupLng: pickupLng,
+    destLat: destLat, destLng: destLng,
+    priceKzt: priceKzt,
+  );
 }
 
 class TripRepository {
   final GrpcClients _grpc;
   TripRepository(this._grpc);
 
+  TripServiceClient get _client =>
+      TripServiceClient(_grpc.trip, interceptors: [_grpc.interceptor]);
+
   Future<TripEstimate> estimateTrip({
     required double pickupLat, required double pickupLng,
     required double destLat,   required double destLng,
   }) async {
-    // TODO: раскомментируй после генерации proto
-    // final client = TripServiceClient(_grpc.trip, interceptors: [_grpc.interceptor]);
-    // final res = await client.estimateTrip(EstimateRequest(
-    //   pickupLat: pickupLat, pickupLng: pickupLng,
-    //   destLat: destLat,     destLng: destLng,
-    // ));
-    // return TripEstimate(priceKzt: res.priceKzt, distanceKm: res.distanceKm);
-
-    await Future.delayed(const Duration(milliseconds: 600));
-    final dist = _haversine(pickupLat, pickupLng, destLat, destLng);
-    return TripEstimate(priceKzt: (500 + dist * 150).toInt(), distanceKm: dist);
+    final res = await _client.estimateTrip(pb.EstimateRequest(
+      pickupLat: pickupLat, pickupLng: pickupLng,
+      destLat:   destLat,   destLng:   destLng,
+    ));
+    return TripEstimate(priceKzt: res.priceKzt, distanceKm: res.distanceKm);
   }
 
   Future<Trip> createTrip({
     required String pickupAddress, required String destAddress,
     required double pickupLat,     required double pickupLng,
     required double destLat,       required double destLng,
+    required int    priceKzt,
   }) async {
-    // TODO: раскомментируй после генерации proto
-    // final client = TripServiceClient(_grpc.trip, interceptors: [_grpc.interceptor]);
-    // final res = await client.createTrip(CreateTripRequest(
-    //   pickupAddress: pickupAddress, destAddress: destAddress,
-    //   pickupLat: pickupLat,         pickupLng: pickupLng,
-    //   destLat: destLat,             destLng: destLng,
-    // ));
-    // return _mapTrip(res);
-
-    await Future.delayed(const Duration(milliseconds: 800));
-    final dist = _haversine(pickupLat, pickupLng, destLat, destLng);
-    return Trip(
-      id: 'mock_trip_id',
-      passengerId: 'mock_user_id',
-      status: TripStatus.searching,
-      pickupAddress: pickupAddress,
-      destAddress: destAddress,
-      pickupLat: pickupLat, pickupLng: pickupLng,
-      destLat: destLat,     destLng: destLng,
-      priceKzt: (500 + dist * 150).toInt(),
-    );
+    final res = await _client.createTrip(pb.CreateTripRequest(
+      pickupAddress: pickupAddress, destAddress: destAddress,
+      pickupLat:     pickupLat,     pickupLng:   pickupLng,
+      destLat:       destLat,       destLng:     destLng,
+      priceKzt:      Int64(priceKzt),
+    ));
+    return _mapTrip(res);
   }
 
-  double _haversine(double lat1, double lng1, double lat2, double lng2) {
-    const r = 6371.0;
-    final dLat = (lat2 - lat1) * pi / 180;
-    final dLng = (lng2 - lng1) * pi / 180;
-    final a = pow(sin(dLat / 2), 2) +
-        cos(lat1 * pi / 180) * cos(lat2 * pi / 180) * pow(sin(dLng / 2), 2);
-    return r * 2 * atan2(sqrt(a), sqrt(1 - a));
+  Future<void> cancelTrip(String tripId) async {
+    await _client.cancelTrip(pb.TripIDRequest(tripId: tripId));
+  }
+
+  Future<Trip> getTrip(String tripId) async {
+    final res = await _client.getTrip(pb.GetTripRequest(tripId: tripId));
+    return _mapTrip(res);
+  }
+
+  // Server-streaming: сервер шлёт координаты водителя пока поездка активна
+  Stream<({double lat, double lng})> trackDriverLocation(String tripId) {
+    return _client
+        .trackTrip(pb.TrackRequest(tripId: tripId))
+        .map((r) => (lat: r.lat, lng: r.lng));
+  }
+
+  Trip _mapTrip(pb.TripResponse r) => Trip(
+    id:            r.tripId,
+    passengerId:   r.passengerId,
+    driverId:      r.driverId.isEmpty ? null : r.driverId,
+    status:        _mapStatus(r.status),
+    pickupAddress: r.pickupAddress,
+    destAddress:   r.destAddress,
+    pickupLat:     r.pickupLat, pickupLng: r.pickupLng,
+    destLat:       r.destLat,   destLng:   r.destLng,
+    priceKzt:      r.priceKzt.toInt(),
+  );
+
+  TripStatus _mapStatus(pb.TripStatus s) {
+    switch (s) {
+      case pb.TripStatus.ACCEPTED:    return TripStatus.accepted;
+      case pb.TripStatus.ARRIVED:     return TripStatus.arrived;
+      case pb.TripStatus.IN_PROGRESS: return TripStatus.inProgress;
+      case pb.TripStatus.COMPLETED:   return TripStatus.completed;
+      case pb.TripStatus.CANCELLED:   return TripStatus.cancelled;
+      default:                        return TripStatus.searching;
+    }
   }
 }
 

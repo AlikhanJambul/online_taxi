@@ -554,6 +554,72 @@ class LogoutRequest extends $pb.GeneratedMessage {
   void clearRefreshToken() => $_clearField(1);
 }
 
+class GetUploadURLResponse extends $pb.GeneratedMessage {
+  factory GetUploadURLResponse({
+    $core.String? uploadUrl,
+    $core.String? fileUrl,
+  }) {
+    final result = create();
+    if (uploadUrl != null) result.uploadUrl = uploadUrl;
+    if (fileUrl != null) result.fileUrl = fileUrl;
+    return result;
+  }
+
+  GetUploadURLResponse._();
+
+  factory GetUploadURLResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetUploadURLResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetUploadURLResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'uploadUrl')
+    ..aOS(2, _omitFieldNames ? '' : 'fileUrl')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetUploadURLResponse clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetUploadURLResponse copyWith(void Function(GetUploadURLResponse) updates) =>
+      super.copyWith((message) => updates(message as GetUploadURLResponse))
+          as GetUploadURLResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetUploadURLResponse create() => GetUploadURLResponse._();
+  @$core.override
+  GetUploadURLResponse createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static GetUploadURLResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetUploadURLResponse>(create);
+  static GetUploadURLResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get uploadUrl => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set uploadUrl($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasUploadUrl() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUploadUrl() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get fileUrl => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set fileUrl($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasFileUrl() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFileUrl() => $_clearField(2);
+}
+
 const $core.bool _omitFieldNames =
     $core.bool.fromEnvironment('protobuf.omit_field_names');
 const $core.bool _omitMessageNames =

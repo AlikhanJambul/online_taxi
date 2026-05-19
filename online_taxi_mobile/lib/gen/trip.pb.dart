@@ -784,6 +784,60 @@ class EstimateResponse extends $pb.GeneratedMessage {
   void clearDistanceKm() => $_clearField(2);
 }
 
+class TripIDRequest extends $pb.GeneratedMessage {
+  factory TripIDRequest({
+    $core.String? tripId,
+  }) {
+    final result = create();
+    if (tripId != null) result.tripId = tripId;
+    return result;
+  }
+
+  TripIDRequest._();
+
+  factory TripIDRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory TripIDRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'TripIDRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'trip'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'tripId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  TripIDRequest clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  TripIDRequest copyWith(void Function(TripIDRequest) updates) =>
+      super.copyWith((message) => updates(message as TripIDRequest))
+          as TripIDRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static TripIDRequest create() => TripIDRequest._();
+  @$core.override
+  TripIDRequest createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static TripIDRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<TripIDRequest>(create);
+  static TripIDRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get tripId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set tripId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasTripId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTripId() => $_clearField(1);
+}
+
 const $core.bool _omitFieldNames =
     $core.bool.fromEnvironment('protobuf.omit_field_names');
 const $core.bool _omitMessageNames =

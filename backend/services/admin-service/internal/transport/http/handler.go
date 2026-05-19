@@ -6,25 +6,27 @@ import (
 	"online_taxi/services/admin-service/internal/app/usecase"
 	"online_taxi/services/admin-service/internal/domain"
 	loggerPkg "online_taxi/services/shared/logger"
+	"online_taxi/services/shared/jwt"
 )
 
 type Handler struct {
 	service usecase.Service
 	logger  *loggerPkg.Logger
+	tm      *jwt.TokenManager
 }
 
-func NewHandler(service usecase.Service, logger *loggerPkg.Logger) *Handler {
-	return &Handler{service: service, logger: logger}
+func NewHandler(service usecase.Service, logger *loggerPkg.Logger, tm *jwt.TokenManager) *Handler {
+	return &Handler{service: service, logger: logger, tm: tm}
 }
 
-func (h *Handler) Route() *http.ServeMux {
+func (h *Handler) Route() http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /api/v1/admin/users", h.GetUsers)
 	mux.HandleFunc("POST /api/v1/admin/drivers/accept", h.AcceptDriver)
 	mux.HandleFunc("GET /api/v1/admin/drivers", h.GetDrivers)
 
-	return mux
+	return AdminAuthMiddleware(h.tm, mux)
 }
 
 func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {

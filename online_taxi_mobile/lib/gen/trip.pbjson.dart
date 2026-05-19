@@ -186,3 +186,15 @@ const EstimateResponse$json = {
 final $typed_data.Uint8List estimateResponseDescriptor = $convert.base64Decode(
     'ChBFc3RpbWF0ZVJlc3BvbnNlEhsKCXByaWNlX2t6dBgBIAEoBVIIcHJpY2VLenQSHwoLZGlzdG'
     'FuY2Vfa20YAiABKAFSCmRpc3RhbmNlS20=');
+
+@$core.Deprecated('Use tripIDRequestDescriptor instead')
+const TripIDRequest$json = {
+  '1': 'TripIDRequest',
+  '2': [
+    {'1': 'trip_id', '3': 1, '4': 1, '5': 9, '10': 'tripId'},
+  ],
+};
+
+/// Descriptor for `TripIDRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List tripIDRequestDescriptor = $convert
+    .base64Decode('Cg1UcmlwSURSZXF1ZXN0EhcKB3RyaXBfaWQYASABKAlSBnRyaXBJZA==');

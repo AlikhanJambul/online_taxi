@@ -30,6 +30,20 @@ service TripService {
   // 6. Пассажир слушает перемещения водителя (Server Streaming)
   // Ключевое слово stream в ответе значит, что сервер постоянно отдает данные клиенту
   rpc TrackTrip (TrackRequest) returns (stream LocationResponse);
+
+  // --- Статусы поездки ---
+
+  // 7. Водитель прибыл на место
+  rpc DriverArrived (TripIDRequest) returns (TripResponse);
+
+  // 8. Водитель начал поездку
+  rpc StartTrip (TripIDRequest) returns (TripResponse);
+
+  // 9. Водитель завершил поездку
+  rpc CompleteTrip (TripIDRequest) returns (TripResponse);
+
+  // 10. Отмена поездки (и пассажир и водитель могут отменить)
+  rpc CancelTrip (TripIDRequest) returns (TripResponse);
 }
 
 enum TripStatus {
@@ -99,4 +113,8 @@ message EstimateRequest {
 message EstimateResponse {
   int32 price_kzt = 1;
   double distance_km = 2;
+}
+
+message TripIDRequest {
+  string trip_id = 1;
 }

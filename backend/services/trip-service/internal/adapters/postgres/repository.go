@@ -113,6 +113,89 @@ func (r *repository) GetTrip(ctx context.Context, tripID string) (*domain.Trip, 
 	return trip, nil
 }
 
+func (r *repository) DriverArrived(ctx context.Context, tripID, driverID string) (*domain.Trip, error) {
+	query := `
+		UPDATE trips SET status = $1
+		WHERE id = $2 AND driver_id = $3 AND status = $4
+		RETURNING id, passenger_id, driver_id, status,
+		          pickup_address, dest_address, pickup_lat, pickup_lng,
+		          dest_lat, dest_lng, price_kzt, created_at, accepted_at, finished_at
+	`
+	row := r.db.QueryRow(ctx, query,
+		domain.StatusArrived, tripID, driverID, domain.StatusAccepted,
+	)
+	return scanTrip(row)
+}
+
+func (r *repository) StartTrip(ctx context.Context, tripID, driverID string) (*domain.Trip, error) {
+	query := `
+		UPDATE trips SET status = $1
+		WHERE id = $2 AND driver_id = $3 AND status = $4
+		RETURNING id, passenger_id, driver_id, status,
+		          pickup_address, dest_address, pickup_lat, pickup_lng,
+		          dest_lat, dest_lng, price_kzt, created_at, accepted_at, finished_at
+	`
+	row := r.db.QueryRow(ctx, query,
+		domain.StatusInProgress, tripID, driverID, domain.StatusArrived,
+	)
+	return scanTrip(row)
+}
+
+func (r *repository) CompleteTrip(ctx context.Context, tripID, driverID string) (*domain.Trip, error) {
+	query := `
+		UPDATE trips SET status = $1, finished_at = NOW()
+		WHERE id = $2 AND driver_id = $3 AND status = $4
+		RETURNING id, passenger_id, driver_id, status,
+		          pickup_address, dest_address, pickup_lat, pickup_lng,
+		          dest_lat, dest_lng, price_kzt, created_at, accepted_at, finished_at
+	`
+	row := r.db.QueryRow(ctx, query,
+		domain.StatusCompleted, tripID, driverID, domain.StatusInProgress,
+	)
+	return scanTrip(row)
+}
+
+func (r *repository) CancelTrip(ctx context.Context, tripID, userID string) (*domain.Trip, error) {
+	query := `
+		UPDATE trips SET status = $1, finished_at = NOW()
+		WHERE id = $2
+		  AND (passenger_id = $3 OR driver_id = $3)
+		  AND status IN ('SEARCHING', 'ACCEPTED', 'ARRIVED', 'IN_PROGRESS')
+		RETURNING id, passenger_id, driver_id, status,
+		          pickup_address, dest_address, pickup_lat, pickup_lng,
+		          dest_lat, dest_lng, price_kzt, created_at, accepted_at, finished_at
+	`
+	row := r.db.QueryRow(ctx, query,
+		domain.StatusCancelled, tripID, userID,
+	)
+	return scanTrip(row)
+}
+
+func (r *repository) DeleteFCMTokens(ctx context.Context, tokens []string) error {
+	_, err := r.db.Exec(ctx,
+		`UPDATE sessions SET fcm_token = NULL WHERE fcm_token = ANY($1)`,
+		tokens,
+	)
+	return err
+}
+
+func scanTrip(row pgx.Row) (*domain.Trip, error) {
+	trip := &domain.Trip{}
+	err := row.Scan(
+		&trip.ID, &trip.PassengerID, &trip.DriverID, &trip.Status,
+		&trip.PickupAddress, &trip.DestAddress, &trip.PickupLat, &trip.PickupLng,
+		&trip.DestLat, &trip.DestLng, &trip.PriceKZT,
+		&trip.CreatedAt, &trip.AcceptedAt, &trip.FinishedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrInvalidTripStatus
+		}
+		return nil, fmt.Errorf("ошибка БД при обновлении статуса поездки: %w", err)
+	}
+	return trip, nil
+}
+
 func (r *repository) GetFCMTokens(ctx context.Context, driverIDs []string) ([]string, error) {
 	query := `
 				SELECT 

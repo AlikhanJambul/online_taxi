@@ -142,10 +142,10 @@ func (h *Handler) UpdateFCMToken(ctx context.Context, req *pb.UpdateFCMRequest) 
 		return nil, status.Error(codes.Internal, domain.ErrInternal.Error())
 	}
 
-	return nil, nil
+	return &emptypb.Empty{}, nil
 }
 
-func (h *Handler) GetAvatarUploadURL(ctx context.Context, req *emptypb.Empty) (*pb.GetUploadURLResponse, error) {
+func (h *Handler) GetAvatarsUploadURL(ctx context.Context, req *emptypb.Empty) (*pb.GetUploadURLResponse, error) {
 	id, ok := ctx.Value("userID").(string)
 	if !ok || id == "" {
 		h.logger.Warn("пользователь не авторизован")

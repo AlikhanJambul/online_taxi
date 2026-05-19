@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   static const Color primary       = Color(0xFFFFCC00);
@@ -17,38 +18,49 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
+      fontFamily: GoogleFonts.inter().fontFamily,
       scaffoldBackgroundColor: bg,
+
       colorScheme: const ColorScheme.dark(
-        primary: primary,
+        primary:   primary,
         onPrimary: Color(0xFF111111),
-        surface: surface,
+        surface:   surface,
         onSurface: textPrimary,
-        error: error,
+        error:     error,
       ),
-      appBarTheme: const AppBarTheme(
+
+      textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme).copyWith(
+        displayLarge:   GoogleFonts.inter(color: textPrimary, fontWeight: FontWeight.w700),
+        headlineMedium: GoogleFonts.inter(color: textPrimary, fontWeight: FontWeight.w700),
+        titleLarge:     GoogleFonts.inter(color: textPrimary, fontWeight: FontWeight.w600),
+        bodyLarge:      GoogleFonts.inter(color: textPrimary),
+        bodyMedium:     GoogleFonts.inter(color: textSecondary),
+      ),
+
+      appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        iconTheme: IconThemeData(color: textPrimary),
-        titleTextStyle: TextStyle(
-          color: textPrimary,
-          fontSize: 17,
-          fontWeight: FontWeight.w600,
-          letterSpacing: -0.3,
+        iconTheme: const IconThemeData(color: textPrimary),
+        titleTextStyle: GoogleFonts.inter(
+          color: textPrimary, fontSize: 17,
+          fontWeight: FontWeight.w600, letterSpacing: -0.3,
         ),
       ),
+
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
-          foregroundColor: Color(0xFF111111),
+          foregroundColor: const Color(0xFF111111),
           minimumSize: const Size(double.infinity, 54),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          textStyle: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600),
           elevation: 0,
         ),
       ),
+
       inputDecorationTheme: InputDecorationTheme(
-        filled: true,
+        filled:    true,
         fillColor: card,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -67,11 +79,11 @@ class AppTheme {
           borderSide: const BorderSide(color: error),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        hintStyle: const TextStyle(color: textSecondary, fontSize: 15),
-        labelStyle: const TextStyle(color: textSecondary),
+        hintStyle: GoogleFonts.inter(color: textSecondary, fontSize: 15),
       ),
+
       cardTheme: CardThemeData(
-        color: card,
+        color:     card,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),

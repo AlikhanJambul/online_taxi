@@ -100,7 +100,7 @@ func (s *service) ClearSession(ctx context.Context, dto LogoutRequestDTO) error 
 }
 
 func (s *service) RefreshToken(ctx context.Context, dto RefreshRequestDTO) (*RefreshResponseDTO, error) {
-	user, err := s.repo.GetUserByDeviceID(ctx, dto.DeviceID) // TODO: Give the function a refresh token
+	user, err := s.repo.GetUserByRefreshToken(ctx, dto.RefreshToken)
 	if err != nil {
 		return nil, err
 	}

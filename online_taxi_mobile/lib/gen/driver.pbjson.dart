@@ -76,3 +76,17 @@ final $typed_data.Uint8List driverProfileResponseDescriptor = $convert.base64Dec
     'X2NvbG9yGAQgASgJUghjYXJDb2xvchIjCg1saWNlbnNlX3BsYXRlGAUgASgJUgxsaWNlbnNlUG'
     'xhdGUSFwoHY2FyX3VybBgGIAEoCVIGY2FyVXJsEiwKBnN0YXR1cxgHIAEoDjIULmRyaXZlci5E'
     'cml2ZXJTdGF0dXNSBnN0YXR1cw==');
+
+@$core.Deprecated('Use getUploadURLResponseDescriptor instead')
+const GetUploadURLResponse$json = {
+  '1': 'GetUploadURLResponse',
+  '2': [
+    {'1': 'upload_url', '3': 1, '4': 1, '5': 9, '10': 'uploadUrl'},
+    {'1': 'file_url', '3': 2, '4': 1, '5': 9, '10': 'fileUrl'},
+  ],
+};
+
+/// Descriptor for `GetUploadURLResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getUploadURLResponseDescriptor = $convert.base64Decode(
+    'ChRHZXRVcGxvYWRVUkxSZXNwb25zZRIdCgp1cGxvYWRfdXJsGAEgASgJUgl1cGxvYWRVcmwSGQ'
+    'oIZmlsZV91cmwYAiABKAlSB2ZpbGVVcmw=');

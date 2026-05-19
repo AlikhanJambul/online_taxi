@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart';
 import '../provider/driver_provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/map_markers.dart';
 import '../../../features/auth/provider/auth_provider.dart';
 
 class DriverHomeScreen extends ConsumerWidget {
@@ -11,10 +12,11 @@ class DriverHomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(driverProvider);
+    final state   = ref.watch(driverProvider);
+    final markers = ref.watch(mapMarkersProvider).valueOrNull;
 
     ref.listen(driverProvider, (prev, next) {
-      if (next.status == DriverStatus.inTrip) {
+      if (next.status == DriverStatus.inTrip && prev?.status != DriverStatus.inTrip) {
         context.push('/driver/trip');
       }
     });
@@ -29,17 +31,18 @@ class DriverHomeScreen extends ConsumerWidget {
                 zoom: 13,
               )),
             ),
-            mapObjects: state.lat != null ? [
+            mapObjects: state.lat != null && markers != null ? [
               PlacemarkMapObject(
                 mapId: const MapObjectId('driver'),
                 point: Point(latitude: state.lat!, longitude: state.lng!),
                 icon: PlacemarkIcon.single(PlacemarkIconStyle(
-                  image: BitmapDescriptor.fromAssetImage('assets/icons/car.png'),
+                  image: BitmapDescriptor.fromBytes(markers.car),
                 )),
               ),
             ] : [],
           ),
 
+          // Шапка
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -76,6 +79,7 @@ class DriverHomeScreen extends ConsumerWidget {
             ),
           ),
 
+          // Нижняя панель с анимацией между состояниями
           Positioned(
             left: 0, right: 0, bottom: 0,
             child: Container(
@@ -94,16 +98,22 @@ class DriverHomeScreen extends ConsumerWidget {
                       color: AppTheme.border, borderRadius: BorderRadius.circular(2)),
                   )),
                   const SizedBox(height: 20),
-                  if (state.status == DriverStatus.offline)
-                    _OfflineWidget(onGoOnline: () => ref.read(driverProvider.notifier).goOnline()),
-                  if (state.status == DriverStatus.online)
-                    _OnlineWidget(onGoOffline: () => ref.read(driverProvider.notifier).goOffline()),
-                  if (state.status == DriverStatus.hasTrip && state.incomingTrip != null)
-                    _IncomingTripWidget(
-                      trip: state.incomingTrip!,
-                      onAccept: () => ref.read(driverProvider.notifier).acceptTrip(state.incomingTrip!.id),
-                      onDecline: () => ref.read(driverProvider.notifier).declineTrip(),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 320),
+                    switchInCurve:  Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeInCubic,
+                    transitionBuilder: (child, animation) => FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0, 0.12),
+                          end:   Offset.zero,
+                        ).animate(animation),
+                        child: child,
+                      ),
                     ),
+                    child: _panelContent(state, ref),
+                  ),
                 ],
               ),
             ),
@@ -112,11 +122,35 @@ class DriverHomeScreen extends ConsumerWidget {
       ),
     );
   }
+
+  Widget _panelContent(DriverState state, WidgetRef ref) {
+    switch (state.status) {
+      case DriverStatus.online:
+        return _OnlineWidget(
+          key: const ValueKey('online'),
+          onGoOffline: () => ref.read(driverProvider.notifier).goOffline(),
+        );
+      case DriverStatus.hasTrip when state.incomingTrip != null:
+        return _IncomingTripWidget(
+          key: ValueKey('trip_${state.incomingTrip!.id}'),
+          trip:      state.incomingTrip!,
+          onAccept:  () => ref.read(driverProvider.notifier).acceptTrip(state.incomingTrip!.id),
+          onDecline: () => ref.read(driverProvider.notifier).declineTrip(),
+        );
+      default:
+        return _OfflineWidget(
+          key: const ValueKey('offline'),
+          onGoOnline: () => ref.read(driverProvider.notifier).goOnline(),
+        );
+    }
+  }
 }
+
+// ── Offline ──────────────────────────────────────────────────────────────────
 
 class _OfflineWidget extends StatelessWidget {
   final VoidCallback onGoOnline;
-  const _OfflineWidget({required this.onGoOnline});
+  const _OfflineWidget({super.key, required this.onGoOnline});
 
   @override
   Widget build(BuildContext context) => Column(children: [
@@ -139,17 +173,18 @@ class _OfflineWidget extends StatelessWidget {
   ]);
 }
 
+// ── Online ────────────────────────────────────────────────────────────────────
+
 class _OnlineWidget extends StatelessWidget {
   final VoidCallback onGoOffline;
-  const _OnlineWidget({required this.onGoOffline});
+  const _OnlineWidget({super.key, required this.onGoOffline});
 
   @override
   Widget build(BuildContext context) => Column(children: [
     Container(
       width: 64, height: 64,
       decoration: BoxDecoration(
-        color: AppTheme.online.withOpacity(0.15),
-        shape: BoxShape.circle,
+        color: AppTheme.online.withOpacity(0.15), shape: BoxShape.circle,
         border: Border.all(color: AppTheme.online.withOpacity(0.4), width: 2),
       ),
       child: const Icon(Icons.wifi_rounded, color: AppTheme.online, size: 28),
@@ -158,7 +193,7 @@ class _OnlineWidget extends StatelessWidget {
     const Text('Вы на линии', style: TextStyle(
       fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
     const SizedBox(height: 4),
-    Row(mainAxisAlignment: MainAxisAlignment.center, children: const [
+    const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
       SizedBox(width: 14, height: 14,
         child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary)),
       SizedBox(width: 8),
@@ -178,11 +213,18 @@ class _OnlineWidget extends StatelessWidget {
   ]);
 }
 
+// ── Incoming trip ─────────────────────────────────────────────────────────────
+
 class _IncomingTripWidget extends StatelessWidget {
   final IncomingTrip trip;
   final VoidCallback onAccept;
   final VoidCallback onDecline;
-  const _IncomingTripWidget({required this.trip, required this.onAccept, required this.onDecline});
+  const _IncomingTripWidget({
+    super.key,
+    required this.trip,
+    required this.onAccept,
+    required this.onDecline,
+  });
 
   @override
   Widget build(BuildContext context) => Column(children: [
@@ -198,7 +240,7 @@ class _IncomingTripWidget extends StatelessWidget {
       ),
       const Spacer(),
       Text('${trip.priceKzt} ₸', style: const TextStyle(
-        color: AppTheme.primary, fontSize: 22, fontWeight: FontWeight.w700)),
+        color: AppTheme.primary, fontSize: 24, fontWeight: FontWeight.w700)),
     ]),
     const SizedBox(height: 14),
     Container(
@@ -215,7 +257,7 @@ class _IncomingTripWidget extends StatelessWidget {
           Expanded(child: Text(trip.pickupAddress,
             style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
             overflow: TextOverflow.ellipsis)),
-          Text('${trip.distanceKm} км',
+          Text('${trip.distanceKm.toStringAsFixed(1)} км',
             style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
         ]),
         const Padding(padding: EdgeInsets.only(left: 8),
@@ -243,7 +285,8 @@ class _IncomingTripWidget extends StatelessWidget {
       )),
       const SizedBox(width: 12),
       Expanded(child: ElevatedButton(
-        onPressed: onAccept, child: const Text('Принять'),
+        onPressed: onAccept,
+        child: const Text('Принять'),
       )),
     ]),
   ]);

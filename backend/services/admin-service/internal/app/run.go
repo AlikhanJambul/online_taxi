@@ -10,12 +10,12 @@ import (
 	httpPkg "online_taxi/services/admin-service/internal/transport/http"
 	"online_taxi/services/shared/config"
 	"online_taxi/services/shared/database"
+	"online_taxi/services/shared/jwt"
+	"online_taxi/services/shared/logger"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-
-	"online_taxi/services/shared/logger"
 )
 
 func Run() {
@@ -28,9 +28,11 @@ func Run() {
 	}
 	defer db.Close()
 
+	tm := jwt.NewTokenManager(cfg.SecretKey)
+
 	repo := postgres.NewRepo(db)
 	service := usecase.NewService(repo)
-	handler := httpPkg.NewHandler(service, newLogger)
+	handler := httpPkg.NewHandler(service, newLogger, tm)
 
 	port := fmt.Sprintf(":%s", cfg.Services.AdminPort)
 

@@ -6,6 +6,7 @@ import (
 	loggerPkg "online_taxi/services/shared/logger"
 	queue "online_taxi/services/trip-service/internal/adapters/rmq"
 	"online_taxi/services/trip-service/internal/domain"
+	"strconv"
 	"sync"
 )
 
@@ -14,6 +15,13 @@ type Service interface {
 	AcceptTrip(ctx context.Context, dto AcceptTripDTO) (*domain.Trip, error)
 	GetTrip(ctx context.Context, tripID string) (*domain.Trip, error)
 	EstimatePrice(dto EstimatePriceReqDTO) domain.PriceEstimate
+
+	DriverArrived(ctx context.Context, tripID, driverID string) (*domain.Trip, error)
+	StartTrip(ctx context.Context, tripID, driverID string) (*domain.Trip, error)
+	CompleteTrip(ctx context.Context, tripID, driverID string) (*domain.Trip, error)
+	CancelTrip(ctx context.Context, tripID, userID string) (*domain.Trip, error)
+
+	NotifyTripStatusChange(ctx context.Context, trip *domain.Trip) error
 
 	ProcessLocation(ctx context.Context, loc LocationDTO)
 	SubscribeToTrip(tripID string) <-chan LocationDTO
@@ -180,16 +188,115 @@ func (s *service) FindAndNotifyDrivers(ctx context.Context, trip *domain.Trip) e
 
 	// 3. GOOGLE (Firebase): send push-notification
 	s.logger.Info("🔥 УСПЕХ: Отправляем Push-уведомления %d водителям для заказа %s", len(tokens), trip.ID)
-	// TODO: push-notification
 	response := domain.NotifyNewTrip(trip.ID)
 
-	// TODO: return []string deadTokens
-	_, err = s.notify.SendPushMulti(ctx, tokens, response.Title, response.Body)
+	data := map[string]string{
+		"type":           "new_trip",
+		"trip_id":        trip.ID,
+		"pickup_address": trip.PickupAddress,
+		"dest_address":   trip.DestAddress,
+		"pickup_lat":     strconv.FormatFloat(trip.PickupLat, 'f', 6, 64),
+		"pickup_lng":     strconv.FormatFloat(trip.PickupLng, 'f', 6, 64),
+		"price_kzt":      strconv.FormatInt(trip.PriceKZT, 10),
+	}
+	deadTokens, err := s.notify.SendPushMulti(ctx, tokens, response.Title, response.Body, data)
 	if err != nil {
 		return err
 	}
 
-	// TODO: delete tokens from db
+	if len(deadTokens) > 0 {
+		if delErr := s.repo.DeleteFCMTokens(ctx, deadTokens); delErr != nil {
+			s.logger.Warn("failed to delete dead FCM tokens: %v", delErr)
+		}
+	}
+
+	return nil
+}
+
+func (s *service) DriverArrived(ctx context.Context, tripID, driverID string) (*domain.Trip, error) {
+	trip, err := s.repo.DriverArrived(ctx, tripID, driverID)
+	if err != nil {
+		return nil, err
+	}
+
+	if pubErr := s.rmq.Publish("trip.events", "trip.status.changed", trip); pubErr != nil {
+		s.logger.Warn("failed to publish trip.status.changed (arrived): %v", pubErr)
+	}
+	return trip, nil
+}
+
+func (s *service) StartTrip(ctx context.Context, tripID, driverID string) (*domain.Trip, error) {
+	trip, err := s.repo.StartTrip(ctx, tripID, driverID)
+	if err != nil {
+		return nil, err
+	}
+
+	if pubErr := s.rmq.Publish("trip.events", "trip.status.changed", trip); pubErr != nil {
+		s.logger.Warn("failed to publish trip.status.changed (in_progress): %v", pubErr)
+	}
+	return trip, nil
+}
+
+func (s *service) CompleteTrip(ctx context.Context, tripID, driverID string) (*domain.Trip, error) {
+	trip, err := s.repo.CompleteTrip(ctx, tripID, driverID)
+	if err != nil {
+		return nil, err
+	}
+
+	// trip.status.changed → notification.push (уведомление пассажиру)
+	if pubErr := s.rmq.Publish("trip.events", "trip.status.changed", trip); pubErr != nil {
+		s.logger.Warn("failed to publish trip.status.changed (completed): %v", pubErr)
+	}
+	// trip.completed → billing + rating в отдельных консьюмерах
+	if pubErr := s.rmq.Publish("trip.events", "trip.completed", trip); pubErr != nil {
+		s.logger.Warn("failed to publish trip.completed: %v", pubErr)
+	}
+	return trip, nil
+}
+
+func (s *service) CancelTrip(ctx context.Context, tripID, userID string) (*domain.Trip, error) {
+	trip, err := s.repo.CancelTrip(ctx, tripID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if pubErr := s.rmq.Publish("trip.events", "trip.status.changed", trip); pubErr != nil {
+		s.logger.Warn("failed to publish trip.status.changed (cancelled): %v", pubErr)
+	}
+	return trip, nil
+}
+
+func (s *service) NotifyTripStatusChange(ctx context.Context, trip *domain.Trip) error {
+	tokens, err := s.repo.GetFCMTokens(ctx, []string{trip.PassengerID})
+	if err != nil {
+		return fmt.Errorf("failed to get passenger FCM tokens: %w", err)
+	}
+	if len(tokens) == 0 {
+		s.logger.Info("пассажир %s не имеет FCM-токена, пропускаем уведомление", trip.PassengerID)
+		return nil
+	}
+
+	notif := domain.NotifyByStatus(trip.Status)
+	if notif.Title == "" {
+		return nil
+	}
+
+	statusData := map[string]string{
+		"type":    "status_changed",
+		"trip_id": trip.ID,
+		"status":  string(trip.Status),
+	}
+	deadTokens, err := s.notify.SendPushMulti(ctx, tokens, notif.Title, notif.Body, statusData)
+	if err != nil {
+		return fmt.Errorf("failed to send push to passenger: %w", err)
+	}
+
+	if len(deadTokens) > 0 {
+		if delErr := s.repo.DeleteFCMTokens(ctx, deadTokens); delErr != nil {
+			s.logger.Warn("failed to delete dead passenger FCM tokens: %v", delErr)
+		}
+	}
+
 	return nil
 }
 

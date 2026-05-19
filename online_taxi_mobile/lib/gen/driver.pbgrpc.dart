@@ -47,6 +47,13 @@ class DriverServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getProfile, request, options: options);
   }
 
+  $grpc.ResponseFuture<$0.GetUploadURLResponse> getCarUploadURL(
+    $1.Empty request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getCarUploadURL, request, options: options);
+  }
+
   // method descriptors
 
   static final _$createProfile =
@@ -59,6 +66,11 @@ class DriverServiceClient extends $grpc.Client {
           '/driver.DriverService/GetProfile',
           ($1.Empty value) => value.writeToBuffer(),
           $0.DriverProfileResponse.fromBuffer);
+  static final _$getCarUploadURL =
+      $grpc.ClientMethod<$1.Empty, $0.GetUploadURLResponse>(
+          '/driver.DriverService/GetCarUploadURL',
+          ($1.Empty value) => value.writeToBuffer(),
+          $0.GetUploadURLResponse.fromBuffer);
 }
 
 @$pb.GrpcServiceName('driver.DriverService')
@@ -82,6 +94,13 @@ abstract class DriverServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $1.Empty.fromBuffer(value),
         ($0.DriverProfileResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.Empty, $0.GetUploadURLResponse>(
+        'GetCarUploadURL',
+        getCarUploadURL_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $1.Empty.fromBuffer(value),
+        ($0.GetUploadURLResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.DriverProfileResponse> createProfile_Pre(
@@ -99,5 +118,13 @@ abstract class DriverServiceBase extends $grpc.Service {
   }
 
   $async.Future<$0.DriverProfileResponse> getProfile(
+      $grpc.ServiceCall call, $1.Empty request);
+
+  $async.Future<$0.GetUploadURLResponse> getCarUploadURL_Pre(
+      $grpc.ServiceCall $call, $async.Future<$1.Empty> $request) async {
+    return getCarUploadURL($call, await $request);
+  }
+
+  $async.Future<$0.GetUploadURLResponse> getCarUploadURL(
       $grpc.ServiceCall call, $1.Empty request);
 }

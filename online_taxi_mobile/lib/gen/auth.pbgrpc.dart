@@ -68,6 +68,13 @@ class AuthServiceClient extends $grpc.Client {
     return $createUnaryCall(_$updateFCMToken, request, options: options);
   }
 
+  $grpc.ResponseFuture<$0.GetUploadURLResponse> getAvatarsUploadURL(
+    $1.Empty request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getAvatarsUploadURL, request, options: options);
+  }
+
   // method descriptors
 
   static final _$register =
@@ -93,6 +100,11 @@ class AuthServiceClient extends $grpc.Client {
           '/auth.AuthService/UpdateFCMToken',
           ($0.UpdateFCMRequest value) => value.writeToBuffer(),
           $1.Empty.fromBuffer);
+  static final _$getAvatarsUploadURL =
+      $grpc.ClientMethod<$1.Empty, $0.GetUploadURLResponse>(
+          '/auth.AuthService/GetAvatarsUploadURL',
+          ($1.Empty value) => value.writeToBuffer(),
+          $0.GetUploadURLResponse.fromBuffer);
 }
 
 @$pb.GrpcServiceName('auth.AuthService')
@@ -135,6 +147,13 @@ abstract class AuthServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.UpdateFCMRequest.fromBuffer(value),
         ($1.Empty value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.Empty, $0.GetUploadURLResponse>(
+        'GetAvatarsUploadURL',
+        getAvatarsUploadURL_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $1.Empty.fromBuffer(value),
+        ($0.GetUploadURLResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.AuthResponse> register_Pre($grpc.ServiceCall $call,
@@ -176,4 +195,12 @@ abstract class AuthServiceBase extends $grpc.Service {
 
   $async.Future<$1.Empty> updateFCMToken(
       $grpc.ServiceCall call, $0.UpdateFCMRequest request);
+
+  $async.Future<$0.GetUploadURLResponse> getAvatarsUploadURL_Pre(
+      $grpc.ServiceCall $call, $async.Future<$1.Empty> $request) async {
+    return getAvatarsUploadURL($call, await $request);
+  }
+
+  $async.Future<$0.GetUploadURLResponse> getAvatarsUploadURL(
+      $grpc.ServiceCall call, $1.Empty request);
 }

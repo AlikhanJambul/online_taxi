@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart';
 import '../provider/trip_provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/map_markers.dart';
 import '../../../features/auth/provider/auth_provider.dart';
 
 class PassengerMapScreen extends ConsumerStatefulWidget {
@@ -56,20 +58,33 @@ class _PassengerMapScreenState extends ConsumerState<PassengerMapScreen> {
     } catch (_) {}
   }
 
-  void _onDestSet() {
+  Future<void> _onDestSet() async {
     final dest = _destCtrl.text.trim();
     if (dest.isEmpty) return;
-    ref.read(passengerProvider.notifier).setDest(
-      address: dest,
-      lat: 51.1505,
-      lng: 71.4604,
-    );
     FocusScope.of(context).unfocus();
+
+    double lat = 51.1605, lng = 71.4704; // fallback — центр Астаны
+    try {
+      final locations = await locationFromAddress(dest);
+      if (locations.isNotEmpty) {
+        lat = locations.first.latitude;
+        lng = locations.first.longitude;
+      }
+    } catch (_) {}
+
+    ref.read(passengerProvider.notifier).setDest(address: dest, lat: lat, lng: lng);
+
+    _mapCtrl?.moveCamera(
+      CameraUpdate.newCameraPosition(CameraPosition(
+        target: Point(latitude: lat, longitude: lng), zoom: 14)),
+      animation: const MapAnimation(type: MapAnimationType.smooth, duration: 1),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(passengerProvider);
+    final state   = ref.watch(passengerProvider);
+    final markers = ref.watch(mapMarkersProvider).valueOrNull;
 
     ref.listen(passengerProvider, (prev, next) {
       if (next.status == PassengerFlowStatus.searching ||
@@ -195,22 +210,20 @@ class _PassengerMapScreenState extends ConsumerState<PassengerMapScreen> {
 
   List<MapObject> _buildMapObjects(PassengerState state) {
     final objects = <MapObject>[];
-    if (state.pickupLat != null) {
+    final m       = ref.read(mapMarkersProvider).valueOrNull;
+
+    if (state.pickupLat != null && m != null) {
       objects.add(PlacemarkMapObject(
         mapId: const MapObjectId('pickup'),
         point: Point(latitude: state.pickupLat!, longitude: state.pickupLng!),
-        icon: PlacemarkIcon.single(PlacemarkIconStyle(
-          image: BitmapDescriptor.fromAssetImage('assets/icons/pickup.png'),
-        )),
+        icon: PlacemarkIcon.single(PlacemarkIconStyle(image: BitmapDescriptor.fromBytes(m.pickup))),
       ));
     }
-    if (state.destLat != null) {
+    if (state.destLat != null && m != null) {
       objects.add(PlacemarkMapObject(
         mapId: const MapObjectId('dest'),
         point: Point(latitude: state.destLat!, longitude: state.destLng!),
-        icon: PlacemarkIcon.single(PlacemarkIconStyle(
-          image: BitmapDescriptor.fromAssetImage('assets/icons/dest.png'),
-        )),
+        icon: PlacemarkIcon.single(PlacemarkIconStyle(image: BitmapDescriptor.fromBytes(m.destination))),
       ));
     }
     return objects;

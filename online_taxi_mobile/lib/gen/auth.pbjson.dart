@@ -136,3 +136,17 @@ const LogoutRequest$json = {
 /// Descriptor for `LogoutRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List logoutRequestDescriptor = $convert.base64Decode(
     'Cg1Mb2dvdXRSZXF1ZXN0EiMKDXJlZnJlc2hfdG9rZW4YASABKAlSDHJlZnJlc2hUb2tlbg==');
+
+@$core.Deprecated('Use getUploadURLResponseDescriptor instead')
+const GetUploadURLResponse$json = {
+  '1': 'GetUploadURLResponse',
+  '2': [
+    {'1': 'upload_url', '3': 1, '4': 1, '5': 9, '10': 'uploadUrl'},
+    {'1': 'file_url', '3': 2, '4': 1, '5': 9, '10': 'fileUrl'},
+  ],
+};
+
+/// Descriptor for `GetUploadURLResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getUploadURLResponseDescriptor = $convert.base64Decode(
+    'ChRHZXRVcGxvYWRVUkxSZXNwb25zZRIdCgp1cGxvYWRfdXJsGAEgASgJUgl1cGxvYWRVcmwSGQ'
+    'oIZmlsZV91cmwYAiABKAlSB2ZpbGVVcmw=');

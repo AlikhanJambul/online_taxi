@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -27,12 +28,13 @@ func (r *repository) SaveUser(ctx context.Context, data *domain.User, token stri
 	}
 	defer tx.Rollback(ctx)
 
-	_, err = tx.Exec(ctx, queryUser, userID, data.Phone, data.Email, data.Password, data.FullName, data.Role, "empty")
+	_, err = tx.Exec(ctx, queryUser, userID, data.Phone, data.Email, data.Password, data.FullName, data.Role, "")
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.Exec(ctx, querySession, userID, token, deviceID, "lolo")
+	pendingFCM := fmt.Sprintf("pending_%s", userID)
+	_, err = tx.Exec(ctx, querySession, userID, token, deviceID, pendingFCM)
 	if err != nil {
 		return err
 	}
@@ -45,14 +47,16 @@ func (r *repository) SaveUser(ctx context.Context, data *domain.User, token stri
 }
 
 func (r *repository) SaveSession(ctx context.Context, userID string, token string, deviceID string) error {
-	query := `INSERT INTO sessions (user_id, refresh_token, device_id, expires_at) VALUES ($1, $2, $3, NOW() + INTERVAL '30 days');`
+	query := `
+		INSERT INTO sessions (user_id, refresh_token, device_id, expires_at)
+		VALUES ($1, $2, $3, NOW() + INTERVAL '30 days')
+		ON CONFLICT (user_id, device_id) DO UPDATE
+		SET refresh_token = EXCLUDED.refresh_token,
+		    expires_at    = EXCLUDED.expires_at;
+	`
 
 	_, err := r.db.Exec(ctx, query, userID, token, deviceID)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (r *repository) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
@@ -111,6 +115,35 @@ func (r *repository) SaveRefreshToken(ctx context.Context, token, deviceID strin
 	_, err := r.db.Exec(ctx, query, token, deviceID)
 
 	return err
+}
+
+func (r *repository) GetUserByRefreshToken(ctx context.Context, refreshToken string) (*domain.User, error) {
+	query := `
+		SELECT u.id, u.phone, u.email, u.password_hash, u.full_name, u.role
+		FROM users u
+		INNER JOIN sessions s ON u.id = s.user_id
+		WHERE s.refresh_token = $1 AND s.expires_at > NOW();
+	`
+
+	var user domain.User
+
+	err := r.db.QueryRow(ctx, query, refreshToken).Scan(
+		&user.ID,
+		&user.Phone,
+		&user.Email,
+		&user.Password,
+		&user.FullName,
+		&user.Role,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrUserNotFound
+		}
+		return nil, err
+	}
+
+	return &user, nil
 }
 
 func (r *repository) GetUserByDeviceID(ctx context.Context, deviceID string) (*domain.User, error) {

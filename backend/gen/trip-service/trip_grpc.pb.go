@@ -20,12 +20,16 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TripService_CreateTrip_FullMethodName   = "/trip.TripService/CreateTrip"
-	TripService_AcceptTrip_FullMethodName   = "/trip.TripService/AcceptTrip"
-	TripService_GetTrip_FullMethodName      = "/trip.TripService/GetTrip"
-	TripService_EstimateTrip_FullMethodName = "/trip.TripService/EstimateTrip"
-	TripService_SendLocation_FullMethodName = "/trip.TripService/SendLocation"
-	TripService_TrackTrip_FullMethodName    = "/trip.TripService/TrackTrip"
+	TripService_CreateTrip_FullMethodName    = "/trip.TripService/CreateTrip"
+	TripService_AcceptTrip_FullMethodName    = "/trip.TripService/AcceptTrip"
+	TripService_GetTrip_FullMethodName       = "/trip.TripService/GetTrip"
+	TripService_EstimateTrip_FullMethodName  = "/trip.TripService/EstimateTrip"
+	TripService_SendLocation_FullMethodName  = "/trip.TripService/SendLocation"
+	TripService_TrackTrip_FullMethodName     = "/trip.TripService/TrackTrip"
+	TripService_DriverArrived_FullMethodName = "/trip.TripService/DriverArrived"
+	TripService_StartTrip_FullMethodName     = "/trip.TripService/StartTrip"
+	TripService_CompleteTrip_FullMethodName  = "/trip.TripService/CompleteTrip"
+	TripService_CancelTrip_FullMethodName    = "/trip.TripService/CancelTrip"
 )
 
 // TripServiceClient is the client API for TripService service.
@@ -46,6 +50,14 @@ type TripServiceClient interface {
 	// 6. Пассажир слушает перемещения водителя (Server Streaming)
 	// Ключевое слово stream в ответе значит, что сервер постоянно отдает данные клиенту
 	TrackTrip(ctx context.Context, in *TrackRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[LocationResponse], error)
+	// 7. Водитель прибыл на место
+	DriverArrived(ctx context.Context, in *TripIDRequest, opts ...grpc.CallOption) (*TripResponse, error)
+	// 8. Водитель начал поездку
+	StartTrip(ctx context.Context, in *TripIDRequest, opts ...grpc.CallOption) (*TripResponse, error)
+	// 9. Водитель завершил поездку
+	CompleteTrip(ctx context.Context, in *TripIDRequest, opts ...grpc.CallOption) (*TripResponse, error)
+	// 10. Отмена поездки (и пассажир и водитель могут отменить)
+	CancelTrip(ctx context.Context, in *TripIDRequest, opts ...grpc.CallOption) (*TripResponse, error)
 }
 
 type tripServiceClient struct {
@@ -128,6 +140,46 @@ func (c *tripServiceClient) TrackTrip(ctx context.Context, in *TrackRequest, opt
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type TripService_TrackTripClient = grpc.ServerStreamingClient[LocationResponse]
 
+func (c *tripServiceClient) DriverArrived(ctx context.Context, in *TripIDRequest, opts ...grpc.CallOption) (*TripResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TripResponse)
+	err := c.cc.Invoke(ctx, TripService_DriverArrived_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tripServiceClient) StartTrip(ctx context.Context, in *TripIDRequest, opts ...grpc.CallOption) (*TripResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TripResponse)
+	err := c.cc.Invoke(ctx, TripService_StartTrip_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tripServiceClient) CompleteTrip(ctx context.Context, in *TripIDRequest, opts ...grpc.CallOption) (*TripResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TripResponse)
+	err := c.cc.Invoke(ctx, TripService_CompleteTrip_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tripServiceClient) CancelTrip(ctx context.Context, in *TripIDRequest, opts ...grpc.CallOption) (*TripResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TripResponse)
+	err := c.cc.Invoke(ctx, TripService_CancelTrip_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TripServiceServer is the server API for TripService service.
 // All implementations must embed UnimplementedTripServiceServer
 // for forward compatibility.
@@ -146,6 +198,14 @@ type TripServiceServer interface {
 	// 6. Пассажир слушает перемещения водителя (Server Streaming)
 	// Ключевое слово stream в ответе значит, что сервер постоянно отдает данные клиенту
 	TrackTrip(*TrackRequest, grpc.ServerStreamingServer[LocationResponse]) error
+	// 7. Водитель прибыл на место
+	DriverArrived(context.Context, *TripIDRequest) (*TripResponse, error)
+	// 8. Водитель начал поездку
+	StartTrip(context.Context, *TripIDRequest) (*TripResponse, error)
+	// 9. Водитель завершил поездку
+	CompleteTrip(context.Context, *TripIDRequest) (*TripResponse, error)
+	// 10. Отмена поездки (и пассажир и водитель могут отменить)
+	CancelTrip(context.Context, *TripIDRequest) (*TripResponse, error)
 	mustEmbedUnimplementedTripServiceServer()
 }
 
@@ -173,6 +233,18 @@ func (UnimplementedTripServiceServer) SendLocation(grpc.ClientStreamingServer[Lo
 }
 func (UnimplementedTripServiceServer) TrackTrip(*TrackRequest, grpc.ServerStreamingServer[LocationResponse]) error {
 	return status.Error(codes.Unimplemented, "method TrackTrip not implemented")
+}
+func (UnimplementedTripServiceServer) DriverArrived(context.Context, *TripIDRequest) (*TripResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DriverArrived not implemented")
+}
+func (UnimplementedTripServiceServer) StartTrip(context.Context, *TripIDRequest) (*TripResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method StartTrip not implemented")
+}
+func (UnimplementedTripServiceServer) CompleteTrip(context.Context, *TripIDRequest) (*TripResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CompleteTrip not implemented")
+}
+func (UnimplementedTripServiceServer) CancelTrip(context.Context, *TripIDRequest) (*TripResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelTrip not implemented")
 }
 func (UnimplementedTripServiceServer) mustEmbedUnimplementedTripServiceServer() {}
 func (UnimplementedTripServiceServer) testEmbeddedByValue()                     {}
@@ -285,6 +357,78 @@ func _TripService_TrackTrip_Handler(srv interface{}, stream grpc.ServerStream) e
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type TripService_TrackTripServer = grpc.ServerStreamingServer[LocationResponse]
 
+func _TripService_DriverArrived_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TripIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TripServiceServer).DriverArrived(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TripService_DriverArrived_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TripServiceServer).DriverArrived(ctx, req.(*TripIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TripService_StartTrip_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TripIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TripServiceServer).StartTrip(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TripService_StartTrip_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TripServiceServer).StartTrip(ctx, req.(*TripIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TripService_CompleteTrip_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TripIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TripServiceServer).CompleteTrip(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TripService_CompleteTrip_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TripServiceServer).CompleteTrip(ctx, req.(*TripIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TripService_CancelTrip_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TripIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TripServiceServer).CancelTrip(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TripService_CancelTrip_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TripServiceServer).CancelTrip(ctx, req.(*TripIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TripService_ServiceDesc is the grpc.ServiceDesc for TripService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -307,6 +451,22 @@ var TripService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "EstimateTrip",
 			Handler:    _TripService_EstimateTrip_Handler,
+		},
+		{
+			MethodName: "DriverArrived",
+			Handler:    _TripService_DriverArrived_Handler,
+		},
+		{
+			MethodName: "StartTrip",
+			Handler:    _TripService_StartTrip_Handler,
+		},
+		{
+			MethodName: "CompleteTrip",
+			Handler:    _TripService_CompleteTrip_Handler,
+		},
+		{
+			MethodName: "CancelTrip",
+			Handler:    _TripService_CancelTrip_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

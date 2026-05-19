@@ -12,5 +12,6 @@ type Repository interface {
 	ClearSession(ctx context.Context, refreshToken string) error
 	SaveRefreshToken(ctx context.Context, token, deviceID string) error
 	GetUserByDeviceID(ctx context.Context, deviceID string) (*User, error)
+	GetUserByRefreshToken(ctx context.Context, refreshToken string) (*User, error)
 	UpdateFCMToken(ctx context.Context, userID, deviceID, fcmToken string) error
 }

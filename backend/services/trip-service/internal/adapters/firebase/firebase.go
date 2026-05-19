@@ -39,13 +39,14 @@ func (c *client) SendPush(ctx context.Context, token, title, body string) error 
 	return err
 }
 
-func (c *client) SendPushMulti(ctx context.Context, tokens []string, title, body string) ([]string, error) {
+func (c *client) SendPushMulti(ctx context.Context, tokens []string, title, body string, data map[string]string) ([]string, error) {
 	response, err := c.Messaging.SendEachForMulticast(ctx, &messaging.MulticastMessage{
 		Tokens: tokens,
 		Notification: &messaging.Notification{
 			Title: title,
 			Body:  body,
 		},
+		Data: data,
 	})
 	if err != nil {
 		return nil, err

@@ -177,7 +177,82 @@ func (h *Handler) TrackTrip(req *pb.TrackRequest, stream pb.TripService_TrackTri
 	}
 }
 
-func (h *Handler) EstimatePrice(ctx context.Context, req *pb.EstimateRequest) (*pb.EstimateResponse, error) {
+func (h *Handler) DriverArrived(ctx context.Context, req *pb.TripIDRequest) (*pb.TripResponse, error) {
+	driverID, ok := ctx.Value("userID").(string)
+	if !ok || driverID == "" {
+		return nil, status.Error(codes.Unauthenticated, "неавторизован")
+	}
+
+	trip, err := h.service.DriverArrived(ctx, req.TripId, driverID)
+	if err != nil {
+		if errors.Is(err, domain.ErrInvalidTripStatus) {
+			return nil, status.Error(codes.FailedPrecondition, domain.ErrInvalidTripStatus.Error())
+		}
+		h.logger.Error("DriverArrived: %v", err)
+		return nil, status.Error(codes.Internal, domain.ErrInternal.Error())
+	}
+
+	return toTripResponse(trip), nil
+}
+
+func (h *Handler) StartTrip(ctx context.Context, req *pb.TripIDRequest) (*pb.TripResponse, error) {
+	driverID, ok := ctx.Value("userID").(string)
+	if !ok || driverID == "" {
+		return nil, status.Error(codes.Unauthenticated, "неавторизован")
+	}
+
+	trip, err := h.service.StartTrip(ctx, req.TripId, driverID)
+	if err != nil {
+		if errors.Is(err, domain.ErrInvalidTripStatus) {
+			return nil, status.Error(codes.FailedPrecondition, domain.ErrInvalidTripStatus.Error())
+		}
+		h.logger.Error("StartTrip: %v", err)
+		return nil, status.Error(codes.Internal, domain.ErrInternal.Error())
+	}
+
+	return toTripResponse(trip), nil
+}
+
+func (h *Handler) CompleteTrip(ctx context.Context, req *pb.TripIDRequest) (*pb.TripResponse, error) {
+	driverID, ok := ctx.Value("userID").(string)
+	if !ok || driverID == "" {
+		return nil, status.Error(codes.Unauthenticated, "неавторизован")
+	}
+
+	trip, err := h.service.CompleteTrip(ctx, req.TripId, driverID)
+	if err != nil {
+		if errors.Is(err, domain.ErrInvalidTripStatus) {
+			return nil, status.Error(codes.FailedPrecondition, domain.ErrInvalidTripStatus.Error())
+		}
+		h.logger.Error("CompleteTrip: %v", err)
+		return nil, status.Error(codes.Internal, domain.ErrInternal.Error())
+	}
+
+	return toTripResponse(trip), nil
+}
+
+func (h *Handler) CancelTrip(ctx context.Context, req *pb.TripIDRequest) (*pb.TripResponse, error) {
+	userID, ok := ctx.Value("userID").(string)
+	if !ok || userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "неавторизован")
+	}
+
+	trip, err := h.service.CancelTrip(ctx, req.TripId, userID)
+	if err != nil {
+		if errors.Is(err, domain.ErrInvalidTripStatus) {
+			return nil, status.Error(codes.FailedPrecondition, domain.ErrInvalidTripStatus.Error())
+		}
+		if errors.Is(err, domain.ErrNotTripParticipant) {
+			return nil, status.Error(codes.PermissionDenied, domain.ErrNotTripParticipant.Error())
+		}
+		h.logger.Error("CancelTrip: %v", err)
+		return nil, status.Error(codes.Internal, domain.ErrInternal.Error())
+	}
+
+	return toTripResponse(trip), nil
+}
+
+func (h *Handler) EstimateTrip(ctx context.Context, req *pb.EstimateRequest) (*pb.EstimateResponse, error) {
 	dto := toEstimateDTO(req)
 
 	response := h.service.EstimatePrice(dto)

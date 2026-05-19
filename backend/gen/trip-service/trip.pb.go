@@ -663,6 +663,50 @@ func (x *EstimateResponse) GetDistanceKm() float64 {
 	return 0
 }
 
+type TripIDRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TripId        string                 `protobuf:"bytes,1,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TripIDRequest) Reset() {
+	*x = TripIDRequest{}
+	mi := &file_trip_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TripIDRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TripIDRequest) ProtoMessage() {}
+
+func (x *TripIDRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_trip_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TripIDRequest.ProtoReflect.Descriptor instead.
+func (*TripIDRequest) Descriptor() ([]byte, []int) {
+	return file_trip_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *TripIDRequest) GetTripId() string {
+	if x != nil {
+		return x.TripId
+	}
+	return ""
+}
+
 var File_trip_proto protoreflect.FileDescriptor
 
 const file_trip_proto_rawDesc = "" +
@@ -717,7 +761,9 @@ const file_trip_proto_rawDesc = "" +
 	"\x10EstimateResponse\x12\x1b\n" +
 	"\tprice_kzt\x18\x01 \x01(\x05R\bpriceKzt\x12\x1f\n" +
 	"\vdistance_km\x18\x02 \x01(\x01R\n" +
-	"distanceKm*}\n" +
+	"distanceKm\"(\n" +
+	"\rTripIDRequest\x12\x17\n" +
+	"\atrip_id\x18\x01 \x01(\tR\x06tripId*}\n" +
 	"\n" +
 	"TripStatus\x12\x16\n" +
 	"\x12STATUS_UNSPECIFIED\x10\x00\x12\r\n" +
@@ -726,7 +772,7 @@ const file_trip_proto_rawDesc = "" +
 	"\aARRIVED\x10\x03\x12\x0f\n" +
 	"\vIN_PROGRESS\x10\x04\x12\r\n" +
 	"\tCOMPLETED\x10\x05\x12\r\n" +
-	"\tCANCELLED\x10\x062\xf3\x02\n" +
+	"\tCANCELLED\x10\x062\xd3\x04\n" +
 	"\vTripService\x129\n" +
 	"\n" +
 	"CreateTrip\x12\x17.trip.CreateTripRequest\x1a\x12.trip.TripResponse\x129\n" +
@@ -735,7 +781,12 @@ const file_trip_proto_rawDesc = "" +
 	"\aGetTrip\x12\x14.trip.GetTripRequest\x1a\x12.trip.TripResponse\x12=\n" +
 	"\fEstimateTrip\x12\x15.trip.EstimateRequest\x1a\x16.trip.EstimateResponse\x12?\n" +
 	"\fSendLocation\x12\x15.trip.LocationRequest\x1a\x16.google.protobuf.Empty(\x01\x129\n" +
-	"\tTrackTrip\x12\x12.trip.TrackRequest\x1a\x16.trip.LocationResponse0\x01B\x12Z\x10gen/trip-serviceb\x06proto3"
+	"\tTrackTrip\x12\x12.trip.TrackRequest\x1a\x16.trip.LocationResponse0\x01\x128\n" +
+	"\rDriverArrived\x12\x13.trip.TripIDRequest\x1a\x12.trip.TripResponse\x124\n" +
+	"\tStartTrip\x12\x13.trip.TripIDRequest\x1a\x12.trip.TripResponse\x127\n" +
+	"\fCompleteTrip\x12\x13.trip.TripIDRequest\x1a\x12.trip.TripResponse\x125\n" +
+	"\n" +
+	"CancelTrip\x12\x13.trip.TripIDRequest\x1a\x12.trip.TripResponseB\x12Z\x10gen/trip-serviceb\x06proto3"
 
 var (
 	file_trip_proto_rawDescOnce sync.Once
@@ -750,7 +801,7 @@ func file_trip_proto_rawDescGZIP() []byte {
 }
 
 var file_trip_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_trip_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_trip_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_trip_proto_goTypes = []any{
 	(TripStatus)(0),           // 0: trip.TripStatus
 	(*CreateTripRequest)(nil), // 1: trip.CreateTripRequest
@@ -762,7 +813,8 @@ var file_trip_proto_goTypes = []any{
 	(*LocationResponse)(nil),  // 7: trip.LocationResponse
 	(*EstimateRequest)(nil),   // 8: trip.EstimateRequest
 	(*EstimateResponse)(nil),  // 9: trip.EstimateResponse
-	(*emptypb.Empty)(nil),     // 10: google.protobuf.Empty
+	(*TripIDRequest)(nil),     // 10: trip.TripIDRequest
+	(*emptypb.Empty)(nil),     // 11: google.protobuf.Empty
 }
 var file_trip_proto_depIdxs = []int32{
 	0,  // 0: trip.TripResponse.status:type_name -> trip.TripStatus
@@ -772,14 +824,22 @@ var file_trip_proto_depIdxs = []int32{
 	8,  // 4: trip.TripService.EstimateTrip:input_type -> trip.EstimateRequest
 	5,  // 5: trip.TripService.SendLocation:input_type -> trip.LocationRequest
 	6,  // 6: trip.TripService.TrackTrip:input_type -> trip.TrackRequest
-	4,  // 7: trip.TripService.CreateTrip:output_type -> trip.TripResponse
-	4,  // 8: trip.TripService.AcceptTrip:output_type -> trip.TripResponse
-	4,  // 9: trip.TripService.GetTrip:output_type -> trip.TripResponse
-	9,  // 10: trip.TripService.EstimateTrip:output_type -> trip.EstimateResponse
-	10, // 11: trip.TripService.SendLocation:output_type -> google.protobuf.Empty
-	7,  // 12: trip.TripService.TrackTrip:output_type -> trip.LocationResponse
-	7,  // [7:13] is the sub-list for method output_type
-	1,  // [1:7] is the sub-list for method input_type
+	10, // 7: trip.TripService.DriverArrived:input_type -> trip.TripIDRequest
+	10, // 8: trip.TripService.StartTrip:input_type -> trip.TripIDRequest
+	10, // 9: trip.TripService.CompleteTrip:input_type -> trip.TripIDRequest
+	10, // 10: trip.TripService.CancelTrip:input_type -> trip.TripIDRequest
+	4,  // 11: trip.TripService.CreateTrip:output_type -> trip.TripResponse
+	4,  // 12: trip.TripService.AcceptTrip:output_type -> trip.TripResponse
+	4,  // 13: trip.TripService.GetTrip:output_type -> trip.TripResponse
+	9,  // 14: trip.TripService.EstimateTrip:output_type -> trip.EstimateResponse
+	11, // 15: trip.TripService.SendLocation:output_type -> google.protobuf.Empty
+	7,  // 16: trip.TripService.TrackTrip:output_type -> trip.LocationResponse
+	4,  // 17: trip.TripService.DriverArrived:output_type -> trip.TripResponse
+	4,  // 18: trip.TripService.StartTrip:output_type -> trip.TripResponse
+	4,  // 19: trip.TripService.CompleteTrip:output_type -> trip.TripResponse
+	4,  // 20: trip.TripService.CancelTrip:output_type -> trip.TripResponse
+	11, // [11:21] is the sub-list for method output_type
+	1,  // [1:11] is the sub-list for method input_type
 	1,  // [1:1] is the sub-list for extension type_name
 	1,  // [1:1] is the sub-list for extension extendee
 	0,  // [0:1] is the sub-list for field type_name
@@ -796,7 +856,7 @@ func file_trip_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_trip_proto_rawDesc), len(file_trip_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   9,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

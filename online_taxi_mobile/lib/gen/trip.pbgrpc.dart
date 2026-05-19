@@ -86,6 +86,38 @@ class TripServiceClient extends $grpc.Client {
         options: options);
   }
 
+  /// 7. Водитель прибыл на место
+  $grpc.ResponseFuture<$0.TripResponse> driverArrived(
+    $0.TripIDRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$driverArrived, request, options: options);
+  }
+
+  /// 8. Водитель начал поездку
+  $grpc.ResponseFuture<$0.TripResponse> startTrip(
+    $0.TripIDRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$startTrip, request, options: options);
+  }
+
+  /// 9. Водитель завершил поездку
+  $grpc.ResponseFuture<$0.TripResponse> completeTrip(
+    $0.TripIDRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$completeTrip, request, options: options);
+  }
+
+  /// 10. Отмена поездки (и пассажир и водитель могут отменить)
+  $grpc.ResponseFuture<$0.TripResponse> cancelTrip(
+    $0.TripIDRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$cancelTrip, request, options: options);
+  }
+
   // method descriptors
 
   static final _$createTrip =
@@ -118,6 +150,26 @@ class TripServiceClient extends $grpc.Client {
           '/trip.TripService/TrackTrip',
           ($0.TrackRequest value) => value.writeToBuffer(),
           $0.LocationResponse.fromBuffer);
+  static final _$driverArrived =
+      $grpc.ClientMethod<$0.TripIDRequest, $0.TripResponse>(
+          '/trip.TripService/DriverArrived',
+          ($0.TripIDRequest value) => value.writeToBuffer(),
+          $0.TripResponse.fromBuffer);
+  static final _$startTrip =
+      $grpc.ClientMethod<$0.TripIDRequest, $0.TripResponse>(
+          '/trip.TripService/StartTrip',
+          ($0.TripIDRequest value) => value.writeToBuffer(),
+          $0.TripResponse.fromBuffer);
+  static final _$completeTrip =
+      $grpc.ClientMethod<$0.TripIDRequest, $0.TripResponse>(
+          '/trip.TripService/CompleteTrip',
+          ($0.TripIDRequest value) => value.writeToBuffer(),
+          $0.TripResponse.fromBuffer);
+  static final _$cancelTrip =
+      $grpc.ClientMethod<$0.TripIDRequest, $0.TripResponse>(
+          '/trip.TripService/CancelTrip',
+          ($0.TripIDRequest value) => value.writeToBuffer(),
+          $0.TripResponse.fromBuffer);
 }
 
 @$pb.GrpcServiceName('trip.TripService')
@@ -167,6 +219,34 @@ abstract class TripServiceBase extends $grpc.Service {
         true,
         ($core.List<$core.int> value) => $0.TrackRequest.fromBuffer(value),
         ($0.LocationResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.TripIDRequest, $0.TripResponse>(
+        'DriverArrived',
+        driverArrived_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.TripIDRequest.fromBuffer(value),
+        ($0.TripResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.TripIDRequest, $0.TripResponse>(
+        'StartTrip',
+        startTrip_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.TripIDRequest.fromBuffer(value),
+        ($0.TripResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.TripIDRequest, $0.TripResponse>(
+        'CompleteTrip',
+        completeTrip_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.TripIDRequest.fromBuffer(value),
+        ($0.TripResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.TripIDRequest, $0.TripResponse>(
+        'CancelTrip',
+        cancelTrip_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.TripIDRequest.fromBuffer(value),
+        ($0.TripResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.TripResponse> createTrip_Pre($grpc.ServiceCall $call,
@@ -211,4 +291,36 @@ abstract class TripServiceBase extends $grpc.Service {
 
   $async.Stream<$0.LocationResponse> trackTrip(
       $grpc.ServiceCall call, $0.TrackRequest request);
+
+  $async.Future<$0.TripResponse> driverArrived_Pre(
+      $grpc.ServiceCall $call, $async.Future<$0.TripIDRequest> $request) async {
+    return driverArrived($call, await $request);
+  }
+
+  $async.Future<$0.TripResponse> driverArrived(
+      $grpc.ServiceCall call, $0.TripIDRequest request);
+
+  $async.Future<$0.TripResponse> startTrip_Pre(
+      $grpc.ServiceCall $call, $async.Future<$0.TripIDRequest> $request) async {
+    return startTrip($call, await $request);
+  }
+
+  $async.Future<$0.TripResponse> startTrip(
+      $grpc.ServiceCall call, $0.TripIDRequest request);
+
+  $async.Future<$0.TripResponse> completeTrip_Pre(
+      $grpc.ServiceCall $call, $async.Future<$0.TripIDRequest> $request) async {
+    return completeTrip($call, await $request);
+  }
+
+  $async.Future<$0.TripResponse> completeTrip(
+      $grpc.ServiceCall call, $0.TripIDRequest request);
+
+  $async.Future<$0.TripResponse> cancelTrip_Pre(
+      $grpc.ServiceCall $call, $async.Future<$0.TripIDRequest> $request) async {
+    return cancelTrip($call, await $request);
+  }
+
+  $async.Future<$0.TripResponse> cancelTrip(
+      $grpc.ServiceCall call, $0.TripIDRequest request);
 }
