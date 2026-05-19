@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:protobuf/well_known_types/google/protobuf/empty.pb.dart';
 import '../../../core/grpc/grpc_client.dart';
 import '../../../gen/trip.pb.dart' as pb;
 import '../../../gen/trip.pbgrpc.dart';
+import '../../../gen/driver.pb.dart' as dpb;
+import '../../../gen/driver.pbgrpc.dart';
 
 class IncomingTrip {
   final String id;
@@ -31,6 +34,32 @@ class DriverRepository {
 
   TripServiceClient get _client =>
       TripServiceClient(_grpc.trip, interceptors: [_grpc.interceptor]);
+
+  DriverServiceClient get _driverClient =>
+      DriverServiceClient(_grpc.driver, interceptors: [_grpc.interceptor]);
+
+  Future<dpb.DriverProfileResponse> getProfile() async {
+    return await _driverClient.getProfile(Empty());
+  }
+
+  Future<String> getCarUploadUrl() async {
+    final res = await _driverClient.getCarUploadURL(Empty());
+    return res.uploadUrl;
+  }
+
+  Future<void> createProfile({
+    required String carMake,
+    required String carModel,
+    required String carColor,
+    required String licensePlate,
+  }) async {
+    await _driverClient.createProfile(dpb.CreateProfileRequest(
+      carMake:      carMake,
+      carModel:     carModel,
+      carColor:     carColor,
+      licensePlate: licensePlate,
+    ));
+  }
 
   Future<void> acceptTrip(String tripId) async {
     await _client.acceptTrip(pb.AcceptTripRequest(tripId: tripId));

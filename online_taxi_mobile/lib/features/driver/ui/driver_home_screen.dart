@@ -16,7 +16,7 @@ class DriverHomeScreen extends ConsumerWidget {
     final markers = ref.watch(mapMarkersProvider).valueOrNull;
 
     ref.listen(driverProvider, (prev, next) {
-      if (next.status == DriverStatus.inTrip && prev?.status != DriverStatus.inTrip) {
+      if (next.status == DriverStatus.enRoute && prev?.status != DriverStatus.enRoute) {
         context.push('/driver/trip');
       }
     });
@@ -112,7 +112,7 @@ class DriverHomeScreen extends ConsumerWidget {
                         child: child,
                       ),
                     ),
-                    child: _panelContent(state, ref),
+                    child: _panelContent(context, state, ref),
                   ),
                 ],
               ),
@@ -123,7 +123,7 @@ class DriverHomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _panelContent(DriverState state, WidgetRef ref) {
+  Widget _panelContent(BuildContext context, DriverState state, WidgetRef ref) {
     switch (state.status) {
       case DriverStatus.online:
         return _OnlineWidget(
@@ -136,6 +136,13 @@ class DriverHomeScreen extends ConsumerWidget {
           trip:      state.incomingTrip!,
           onAccept:  () => ref.read(driverProvider.notifier).acceptTrip(state.incomingTrip!.id),
           onDecline: () => ref.read(driverProvider.notifier).declineTrip(),
+        );
+      case DriverStatus.enRoute:
+      case DriverStatus.arrived:
+      case DriverStatus.inTrip:
+        return _InTripWidget(
+          key: const ValueKey('inTrip'),
+          onOpenTrip: () => context.push('/driver/trip'),
         );
       default:
         return _OfflineWidget(
@@ -210,6 +217,23 @@ class _OnlineWidget extends StatelessWidget {
       ),
       child: const Text('Уйти с линии'),
     ),
+  ]);
+}
+
+// ── In trip (fallback if user somehow returns to home) ────────────────────────
+
+class _InTripWidget extends StatelessWidget {
+  final VoidCallback onOpenTrip;
+  const _InTripWidget({super.key, required this.onOpenTrip});
+
+  @override
+  Widget build(BuildContext context) => Column(children: [
+    const Icon(Icons.directions_car_rounded, color: AppTheme.primary, size: 36),
+    const SizedBox(height: 12),
+    const Text('Вы в поездке', style: TextStyle(
+      fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+    const SizedBox(height: 20),
+    ElevatedButton(onPressed: onOpenTrip, child: const Text('Вернуться к поездке')),
   ]);
 }
 

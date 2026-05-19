@@ -5,7 +5,7 @@ import '../data/driver_repository.dart';
 
 export '../data/driver_repository.dart' show IncomingTrip;
 
-enum DriverStatus { offline, online, hasTrip, arrived, inTrip }
+enum DriverStatus { offline, online, hasTrip, enRoute, arrived, inTrip }
 
 class DriverState {
   final DriverStatus  status;
@@ -68,9 +68,9 @@ class DriverNotifier extends StateNotifier<DriverState> {
     try {
       await _repo.acceptTrip(tripId);
       state = state.copyWith(
-        status:      DriverStatus.inTrip,
+        status:       DriverStatus.enRoute,
         activeTripId: tripId,
-        clearTrip:   true,
+        clearTrip:    true,
       );
     } catch (e) {
       state = state.copyWith(error: 'Не удалось принять заказ');

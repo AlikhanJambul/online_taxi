@@ -8,33 +8,35 @@ import '../../features/passenger/ui/map_screen.dart';
 import '../../features/passenger/ui/trip_screen.dart';
 import '../../features/driver/ui/driver_home_screen.dart';
 import '../../features/driver/ui/active_trip_screen.dart';
+import '../../features/driver/ui/driver_setup_screen.dart';
+import '../../features/driver/ui/pending_approval_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authProvider);
 
-  String initialLocation = '/login';
-  if (auth.status == AuthStatus.authenticated) {
-    initialLocation = auth.role == UserRole.driver ? '/driver' : '/passenger';
-  }
-
   return GoRouter(
-    initialLocation: initialLocation,
+    initialLocation: _resolveInitial(auth),
     redirect: (context, state) {
       final isAuth    = auth.status == AuthStatus.authenticated;
       final isInitial = auth.status == AuthStatus.initial;
-      final goingToAuth = state.matchedLocation == '/login' ||
-          state.matchedLocation == '/register';
+      final loc       = state.matchedLocation;
+      final goingToAuth = loc == '/login' || loc == '/register';
 
       if (isInitial) return null;
       if (!isAuth && !goingToAuth) return '/login';
-      if (isAuth && goingToAuth) {
-        return auth.role == UserRole.driver ? '/driver' : '/passenger';
+      if (isAuth && goingToAuth) return _resolveInitial(auth);
+
+      if (isAuth && auth.role == UserRole.driver) {
+        return _driverRedirect(auth.driverSetupStatus, loc);
       }
+
       return null;
     },
     routes: [
-      GoRoute(path: '/login',    builder: (_, __) => const LoginScreen()),
-      GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
+      GoRoute(path: '/login',           builder: (_, __) => const LoginScreen()),
+      GoRoute(path: '/register',        builder: (_, __) => const RegisterScreen()),
+      GoRoute(path: '/driver/setup',    builder: (_, __) => const DriverSetupScreen()),
+      GoRoute(path: '/driver/pending',  builder: (_, __) => const PendingApprovalScreen()),
       GoRoute(
         path: '/passenger',
         builder: (_, __) => const PassengerMapScreen(),
@@ -55,3 +57,35 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     ),
   );
 });
+
+String _resolveInitial(AuthState auth) {
+  if (auth.status != AuthStatus.authenticated) return '/login';
+  if (auth.role == UserRole.driver) {
+    return _driverHome(auth.driverSetupStatus);
+  }
+  return '/passenger';
+}
+
+String _driverHome(DriverSetupStatus setup) {
+  switch (setup) {
+    case DriverSetupStatus.needsSetup: return '/driver/setup';
+    case DriverSetupStatus.pending:
+    case DriverSetupStatus.rejected:   return '/driver/pending';
+    default:                           return '/driver';
+  }
+}
+
+String? _driverRedirect(DriverSetupStatus setup, String loc) {
+  if (setup == DriverSetupStatus.needsSetup && !loc.startsWith('/driver/setup')) {
+    return '/driver/setup';
+  }
+  if ((setup == DriverSetupStatus.pending || setup == DriverSetupStatus.rejected) &&
+      !loc.startsWith('/driver/pending')) {
+    return '/driver/pending';
+  }
+  if (setup == DriverSetupStatus.approved &&
+      (loc.startsWith('/driver/setup') || loc.startsWith('/driver/pending'))) {
+    return '/driver';
+  }
+  return null;
+}

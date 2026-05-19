@@ -1,12 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:protobuf/well_known_types/google/protobuf/empty.pb.dart';
 import '../../../core/grpc/grpc_client.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/services/device_service.dart';
 import '../../../core/services/fcm_service.dart';
 import '../../../gen/auth.pb.dart' as pb;
 import '../../../gen/auth.pbgrpc.dart';
+import '../../../gen/driver.pbenum.dart' as dpbenum;
+import '../../../gen/driver.pbgrpc.dart';
 
 enum UserRole { passenger, driver, admin }
+
+enum DriverSetupStatus { unknown, needsSetup, pending, approved, rejected }
 
 class AuthRepository {
   final GrpcClients    _grpc;
@@ -109,6 +114,26 @@ class AuthRepository {
       case pb.Role.DRIVER: return UserRole.driver;
       case pb.Role.ADMIN:  return UserRole.admin;
       default:             return UserRole.passenger;
+    }
+  }
+
+  Future<String> getAvatarUploadUrl() async {
+    final res = await _client.getAvatarsUploadURL(Empty());
+    return res.uploadUrl;
+  }
+
+  Future<DriverSetupStatus> checkDriverSetupStatus() async {
+    try {
+      final driverClient = DriverServiceClient(_grpc.driver, interceptors: [_grpc.interceptor]);
+      final profile = await driverClient.getProfile(Empty());
+      switch (profile.status) {
+        case dpbenum.DriverStatus.PENDING:  return DriverSetupStatus.pending;
+        case dpbenum.DriverStatus.APPROVED: return DriverSetupStatus.approved;
+        case dpbenum.DriverStatus.REJECTED: return DriverSetupStatus.rejected;
+        default:                            return DriverSetupStatus.needsSetup;
+      }
+    } catch (_) {
+      return DriverSetupStatus.needsSetup;
     }
   }
 
