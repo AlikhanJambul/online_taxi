@@ -5,3 +5,6 @@ serviceAccountKey.json
 google-services.json
 GoogleService-Info.plist
 .claude/
+online_taxi_mobile/android/local.properties
+admin/node_modules/
+admin/dist/

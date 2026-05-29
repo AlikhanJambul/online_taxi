@@ -78,6 +78,18 @@ func (r *repository) GetUsers(ctx context.Context) ([]domain.User, error) {
 	return users, nil
 }
 
+func (r *repository) GetUserByEmail(ctx context.Context, email string) (*domain.UserAuth, error) {
+	var u domain.UserAuth
+	err := r.db.QueryRow(ctx,
+		`SELECT id, role, password FROM users WHERE email = $1`,
+		email,
+	).Scan(&u.ID, &u.Role, &u.Password)
+	if err != nil {
+		return nil, err
+	}
+	return &u, nil
+}
+
 func (r *repository) GetDrivers(ctx context.Context) ([]domain.Driver, error) {
 	query := `
 				SELECT 
@@ -119,8 +131,8 @@ func (r *repository) GetDrivers(ctx context.Context) ([]domain.Driver, error) {
 			&user.CarMake,
 			&user.CarModel,
 			&user.CarColor,
-			//&user.LicensePlate,
 			&user.CarUrl,
+			&user.Status,
 		); err != nil {
 			return nil, err
 		}

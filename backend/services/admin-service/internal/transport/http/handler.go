@@ -22,11 +22,30 @@ func NewHandler(service usecase.Service, logger *loggerPkg.Logger, tm *jwt.Token
 func (h *Handler) Route() http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /api/v1/admin/users", h.GetUsers)
-	mux.HandleFunc("POST /api/v1/admin/drivers/accept", h.AcceptDriver)
-	mux.HandleFunc("GET /api/v1/admin/drivers", h.GetDrivers)
+	mux.HandleFunc("POST /api/v1/admin/login", h.Login)
 
-	return AdminAuthMiddleware(h.tm, mux)
+	mux.Handle("GET /api/v1/admin/users", AdminAuthMiddleware(h.tm, http.HandlerFunc(h.GetUsers)))
+	mux.Handle("GET /api/v1/admin/drivers", AdminAuthMiddleware(h.tm, http.HandlerFunc(h.GetDrivers)))
+	mux.Handle("POST /api/v1/admin/drivers/accept", AdminAuthMiddleware(h.tm, http.HandlerFunc(h.AcceptDriver)))
+
+	return withCORS(mux)
+}
+
+func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
+	var req usecase.LoginDTO
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		ErrJsonResponse(w, domain.ErrInternal)
+		return
+	}
+
+	token, err := h.service.Login(r.Context(), req)
+	if err != nil {
+		h.logger.Warn("ошибка входа: %v", err)
+		ErrJsonResponse(w, err)
+		return
+	}
+
+	JsonResponse(w, 200, token)
 }
 
 func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {

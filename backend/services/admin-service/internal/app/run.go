@@ -31,7 +31,7 @@ func Run() {
 	tm := jwt.NewTokenManager(cfg.SecretKey)
 
 	repo := postgres.NewRepo(db)
-	service := usecase.NewService(repo)
+	service := usecase.NewService(repo, tm)
 	handler := httpPkg.NewHandler(service, newLogger, tm)
 
 	port := fmt.Sprintf(":%s", cfg.Services.AdminPort)
