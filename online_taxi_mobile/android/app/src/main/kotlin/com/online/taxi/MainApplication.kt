@@ -6,6 +6,6 @@ import com.yandex.mapkit.MapKitFactory
 class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        MapKitFactory.setApiKey("REMOVED")
+        MapKitFactory.setApiKey(BuildConfig.YANDEX_MAPKIT_KEY)
     }
 }
