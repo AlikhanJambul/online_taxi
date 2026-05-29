@@ -76,6 +76,10 @@ CREATE INDEX idx_trips_passenger_id ON trips(passenger_id);
 CREATE INDEX idx_trips_driver_id ON trips(driver_id);
 CREATE INDEX idx_trips_status ON trips(status);
 
+-- Seed admin user (password: admin123)
+INSERT INTO users (phone, email, password_hash, full_name, role)
+VALUES ('+70000000000', 'admin@taxi.com', '$2a$10$ZH3ri5H7Xoc32eIqx.JlaOikFYY9Q4SitZDJqRwTXVcvrQKZo6bBm', 'Admin', 'ADMIN');
+
 --
 -- DROP TABLE IF EXISTS reviews;
 -- DROP TABLE IF EXISTS trips;

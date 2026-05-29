@@ -12,7 +12,7 @@ type User struct {
 	Phone     string `json:"phone,omitempty"`
 	FullName  string `json:"full_name,omitempty"`
 	Role      string `json:"role,omitempty"`
-	AvatarURL string `json:"avatar_url,omitempty"`
+	AvatarURL *string `json:"avatar_url,omitempty"`
 }
 
 type Driver struct {

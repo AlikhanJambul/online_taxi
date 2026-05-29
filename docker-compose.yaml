@@ -45,18 +45,35 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: ${RMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RMQ_PASSWORD}
-      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbitmq_management load_definitions \"/etc/rabbitmq/rabbitmq_config.json\""
     ports:
       - "${RMQ_PORT}:5672"
       - "${RMQ_UI_PORT}:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-      - ./rabbitmq_config.json:/etc/rabbitmq/rabbitmq_config.json:ro
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - taxi-net
+
+  rabbitmq-setup:
+    image: curlimages/curl:latest
+    container_name: taxi_rabbitmq_setup
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    entrypoint: >
+      sh -c "
+      curl -s -u ${RMQ_USER}:${RMQ_PASSWORD}
+      -X POST http://rabbitmq:15672/api/definitions
+      -H 'Content-Type: application/json'
+      -d @/etc/rabbitmq/rabbitmq_config.json &&
+      echo 'RabbitMQ definitions imported'
+      "
+    volumes:
+      - ./rabbitmq_config.json:/etc/rabbitmq/rabbitmq_config.json:ro
     networks:
       - taxi-net
 
@@ -158,7 +175,7 @@ services:
     ports:
       - "50053:50053"
     volumes:
-      - ./serviceAccountKey.json:/app/serviceAccountKey.json:ro
+      - ./serviceAccountKey.json:/root/serviceAccountKey.json:ro
     env_file:
       - .env
     environment:
@@ -181,6 +198,8 @@ services:
       dockerfile: ./services/trip-service/Dockerfile.matching
     container_name: taxi_matching_service
     restart: on-failure
+    volumes:
+      - ./serviceAccountKey.json:/root/serviceAccountKey.json:ro
     env_file:
       - .env
     environment:
@@ -194,6 +213,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      rabbitmq-setup:
+        condition: service_completed_successfully
     networks:
       - taxi-net
 
@@ -204,7 +225,7 @@ services:
     container_name: taxi_notification_service
     restart: on-failure
     volumes:
-      - ./serviceAccountKey.json:/app/serviceAccountKey.json:ro
+      - ./serviceAccountKey.json:/root/serviceAccountKey.json:ro
     env_file:
       - .env
     environment:
@@ -218,6 +239,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      rabbitmq-setup:
+        condition: service_completed_successfully
     networks:
       - taxi-net
 

@@ -81,7 +81,7 @@ func (r *repository) GetUsers(ctx context.Context) ([]domain.User, error) {
 func (r *repository) GetUserByEmail(ctx context.Context, email string) (*domain.UserAuth, error) {
 	var u domain.UserAuth
 	err := r.db.QueryRow(ctx,
-		`SELECT id, role, password FROM users WHERE email = $1`,
+		`SELECT id, role, password_hash FROM users WHERE email = $1`,
 		email,
 	).Scan(&u.ID, &u.Role, &u.Password)
 	if err != nil {
