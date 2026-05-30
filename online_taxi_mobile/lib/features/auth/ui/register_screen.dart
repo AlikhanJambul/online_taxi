@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../provider/auth_provider.dart';
@@ -11,23 +12,78 @@ class RegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+  final _formKey   = GlobalKey<FormState>();
   final _nameCtrl  = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _passCtrl  = TextEditingController();
-  UserRole _role = UserRole.passenger;
-  bool _obscure = true;
+  UserRole _role  = UserRole.passenger;
+  bool _obscure   = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _phoneCtrl.text = '+7';
+    _phoneCtrl.addListener(_enforcePhonePrefix);
+  }
+
+  void _enforcePhonePrefix() {
+    final text = _phoneCtrl.text;
+    if (!text.startsWith('+7')) {
+      _phoneCtrl.value = _phoneCtrl.value.copyWith(
+        text: '+7',
+        selection: const TextSelection.collapsed(offset: 2),
+      );
+    }
+  }
 
   @override
   void dispose() {
-    _nameCtrl.dispose(); _phoneCtrl.dispose();
-    _emailCtrl.dispose(); _passCtrl.dispose();
+    _nameCtrl.dispose();
+    _phoneCtrl.removeListener(_enforcePhonePrefix);
+    _phoneCtrl.dispose();
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
     super.dispose();
   }
 
+  String? _validateName(String? v) {
+    if (v == null || v.trim().isEmpty) return 'Введите полное имя';
+    final trimmed = v.trim();
+    if (trimmed.length < 3) return 'Минимум 3 символа';
+    if (!RegExp(r"^[a-zA-Zа-яА-ЯёЁ\s\-]+$").hasMatch(trimmed)) {
+      return 'Только буквы, пробелы и дефис';
+    }
+    final parts = trimmed.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    if (parts.length < 2) return 'Введите имя и фамилию';
+    return null;
+  }
+
+  String? _validatePhone(String? v) {
+    if (v == null || v.trim().isEmpty) return 'Введите номер телефона';
+    final digits = v.replaceAll(RegExp(r'\D'), '');
+    if (!v.startsWith('+7')) return 'Номер должен начинаться с +7';
+    if (digits.length != 11) return 'Введите 10 цифр после +7';
+    return null;
+  }
+
+  String? _validateEmail(String? v) {
+    if (v == null || v.trim().isEmpty) return 'Введите email';
+    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$');
+    if (!emailRegex.hasMatch(v.trim())) return 'Некорректный email';
+    return null;
+  }
+
+  String? _validatePassword(String? v) {
+    if (v == null || v.isEmpty) return 'Введите пароль';
+    if (v.length < 6) return 'Минимум 6 символов';
+    if (!RegExp(r'[a-zA-Z]').hasMatch(v)) return 'Должна быть хотя бы одна буква';
+    if (!RegExp(r'[0-9]').hasMatch(v)) return 'Должна быть хотя бы одна цифра';
+    return null;
+  }
+
   void _register() {
-    if (_nameCtrl.text.isEmpty || _emailCtrl.text.isEmpty ||
-        _phoneCtrl.text.isEmpty || _passCtrl.text.isEmpty) return;
+    if (!_formKey.currentState!.validate()) return;
     ref.read(authProvider.notifier).register(
       phone: _phoneCtrl.text.trim(),
       password: _passCtrl.text,
@@ -58,103 +114,161 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 12),
-              const Text(
-                'Создать\nаккаунт',
-                style: TextStyle(
-                  fontSize: 32, fontWeight: FontWeight.w700,
-                  color: AppTheme.textPrimary, height: 1.2, letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              const Text('Я хочу:',
-                style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
-              const SizedBox(height: 10),
-              Row(children: [
-                Expanded(child: _RoleCard(
-                  icon: Icons.person_outline_rounded,
-                  label: 'Пассажир',
-                  selected: _role == UserRole.passenger,
-                  onTap: () => setState(() => _role = UserRole.passenger),
-                )),
-                const SizedBox(width: 12),
-                Expanded(child: _RoleCard(
-                  icon: Icons.drive_eta_outlined,
-                  label: 'Водитель',
-                  selected: _role == UserRole.driver,
-                  onTap: () => setState(() => _role = UserRole.driver),
-                )),
-              ]),
-              const SizedBox(height: 24),
-
-              _field(_nameCtrl,  'Полное имя', Icons.badge_outlined),
-              const SizedBox(height: 12),
-              _field(_phoneCtrl, 'Телефон',    Icons.phone_outlined, type: TextInputType.phone),
-              const SizedBox(height: 12),
-              _field(_emailCtrl, 'Email',       Icons.mail_outline_rounded, type: TextInputType.emailAddress),
-              const SizedBox(height: 12),
-
-              TextField(
-                controller: _passCtrl,
-                obscureText: _obscure,
-                style: const TextStyle(color: AppTheme.textPrimary),
-                decoration: InputDecoration(
-                  hintText: 'Пароль',
-                  prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppTheme.textSecondary, size: 20),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                      color: AppTheme.textSecondary, size: 20,
-                    ),
-                    onPressed: () => setState(() => _obscure = !_obscure),
-                  ),
-                ),
-              ),
-
-              if (auth.error != null) ...[
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppTheme.error.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppTheme.error.withOpacity(0.3)),
+                const Text(
+                  'Создать\nаккаунт',
+                  style: TextStyle(
+                    fontSize: 32, fontWeight: FontWeight.w700,
+                    color: AppTheme.textPrimary, height: 1.2, letterSpacing: -0.5,
                   ),
-                  child: Text(auth.error!, style: const TextStyle(color: AppTheme.error, fontSize: 13)),
                 ),
-              ],
+                const SizedBox(height: 32),
 
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: loading ? null : _register,
-                child: loading
-                    ? const SizedBox(width: 20, height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
-                    : const Text('Зарегистрироваться'),
-              ),
-              const SizedBox(height: 32),
-            ],
+                const Text('Я хочу:',
+                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
+                const SizedBox(height: 10),
+                Row(children: [
+                  Expanded(child: _RoleCard(
+                    icon: Icons.person_outline_rounded,
+                    label: 'Пассажир',
+                    selected: _role == UserRole.passenger,
+                    onTap: () => setState(() => _role = UserRole.passenger),
+                  )),
+                  const SizedBox(width: 12),
+                  Expanded(child: _RoleCard(
+                    icon: Icons.drive_eta_outlined,
+                    label: 'Водитель',
+                    selected: _role == UserRole.driver,
+                    onTap: () => setState(() => _role = UserRole.driver),
+                  )),
+                ]),
+                const SizedBox(height: 24),
+
+                TextFormField(
+                  controller: _nameCtrl,
+                  validator: _validateName,
+                  textCapitalization: TextCapitalization.words,
+                  style: const TextStyle(color: AppTheme.textPrimary),
+                  decoration: const InputDecoration(
+                    hintText: 'Полное имя',
+                    prefixIcon: Icon(Icons.badge_outlined, color: AppTheme.textSecondary, size: 20),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                TextFormField(
+                  controller: _phoneCtrl,
+                  validator: _validatePhone,
+                  keyboardType: TextInputType.phone,
+                  inputFormatters: [_PhoneInputFormatter()],
+                  style: const TextStyle(color: AppTheme.textPrimary),
+                  decoration: const InputDecoration(
+                    hintText: '+7 (XXX) XXX-XX-XX',
+                    prefixIcon: Icon(Icons.phone_outlined, color: AppTheme.textSecondary, size: 20),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                TextFormField(
+                  controller: _emailCtrl,
+                  validator: _validateEmail,
+                  keyboardType: TextInputType.emailAddress,
+                  style: const TextStyle(color: AppTheme.textPrimary),
+                  decoration: const InputDecoration(
+                    hintText: 'Email',
+                    prefixIcon: Icon(Icons.mail_outline_rounded, color: AppTheme.textSecondary, size: 20),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                TextFormField(
+                  controller: _passCtrl,
+                  validator: _validatePassword,
+                  obscureText: _obscure,
+                  style: const TextStyle(color: AppTheme.textPrimary),
+                  decoration: InputDecoration(
+                    hintText: 'Пароль',
+                    prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppTheme.textSecondary, size: 20),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                        color: AppTheme.textSecondary, size: 20,
+                      ),
+                      onPressed: () => setState(() => _obscure = !_obscure),
+                    ),
+                  ),
+                ),
+
+                if (auth.error != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: AppTheme.error.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppTheme.error.withOpacity(0.3)),
+                    ),
+                    child: Text(auth.error!, style: const TextStyle(color: AppTheme.error, fontSize: 13)),
+                  ),
+                ],
+
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: loading ? null : _register,
+                  child: loading
+                      ? const SizedBox(width: 20, height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                      : const Text('Зарегистрироваться'),
+                ),
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _field(TextEditingController ctrl, String hint, IconData icon,
-      {TextInputType? type}) =>
-      TextField(
-        controller: ctrl,
-        keyboardType: type,
-        style: const TextStyle(color: AppTheme.textPrimary),
-        decoration: InputDecoration(
-          hintText: hint,
-          prefixIcon: Icon(icon, color: AppTheme.textSecondary, size: 20),
-        ),
-      );
+class _PhoneInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    String digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+
+    // Убедимся что начинается с 7
+    if (digits.isEmpty) digits = '7';
+    if (!digits.startsWith('7')) digits = '7$digits';
+    if (digits.length > 11) digits = digits.substring(0, 11);
+
+    final buf = StringBuffer('+7');
+    if (digits.length > 1) {
+      buf.write(' (');
+      buf.write(digits.substring(1, digits.length.clamp(1, 4)));
+      if (digits.length > 4) {
+        buf.write(') ');
+        buf.write(digits.substring(4, digits.length.clamp(4, 7)));
+        if (digits.length > 7) {
+          buf.write('-');
+          buf.write(digits.substring(7, digits.length.clamp(7, 9)));
+          if (digits.length > 9) {
+            buf.write('-');
+            buf.write(digits.substring(9, digits.length.clamp(9, 11)));
+          }
+        }
+      }
+    }
+
+    final formatted = buf.toString();
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
 }
 
 class _RoleCard extends StatelessWidget {

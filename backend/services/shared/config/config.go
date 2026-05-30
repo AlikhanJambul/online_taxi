@@ -31,6 +31,7 @@ func Load() *models.Config {
 	s3.Password = os.Getenv("MINIO_PASSWORD")
 	s3.Port = os.Getenv("MINIO_PORT")
 	s3.UIPort = os.Getenv("MINIO_UI_PORT")
+	s3.ExternalHost = os.Getenv("MINIO_EXTERNAL_HOST")
 
 	mail.Port = os.Getenv("SMTP_PORT")
 	mail.Mail = os.Getenv("MAIL")

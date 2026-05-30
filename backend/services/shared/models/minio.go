@@ -1,8 +1,9 @@
 package models
 
 type Minio struct {
-	User     string
-	Password string
-	Port     string
-	UIPort   string
+	User         string
+	Password     string
+	Port         string
+	UIPort       string
+	ExternalHost string
 }

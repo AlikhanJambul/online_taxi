@@ -6,6 +6,7 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -14,10 +15,12 @@ type FileStorage interface {
 }
 
 type fileStorage struct {
-	client *minio.Client
+	client       *minio.Client
+	internalHost string
+	externalHost string
 }
 
-func NewFileStorage(endpoint, accessKey, secretKey, bucketName string) (FileStorage, error) {
+func NewFileStorage(endpoint, accessKey, secretKey, bucketName, externalHost string) (FileStorage, error) {
 	minioClient, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
 		Secure: false,
@@ -30,7 +33,7 @@ func NewFileStorage(endpoint, accessKey, secretKey, bucketName string) (FileStor
 		return nil, err
 	}
 
-	return &fileStorage{client: minioClient}, nil
+	return &fileStorage{client: minioClient, internalHost: endpoint, externalHost: externalHost}, nil
 }
 
 func ensureBucket(client *minio.Client, bucketName string) error {
@@ -68,9 +71,11 @@ func ensureBucket(client *minio.Client, bucketName string) error {
 }
 
 func (s *fileStorage) GenerateUploadURL(ctx context.Context, bucketName, objectName string, expiry time.Duration) (string, error) {
-	url, err := s.client.PresignedPutObject(ctx, bucketName, objectName, expiry)
+	u, err := s.client.PresignedPutObject(ctx, bucketName, objectName, expiry)
 	if err != nil {
 		return "", fmt.Errorf("ошибка генерации URL для %s/%s: %w", bucketName, objectName, err)
 	}
-	return url.String(), nil
+
+	result := strings.Replace(u.String(), s.internalHost, s.externalHost, 1)
+	return result, nil
 }

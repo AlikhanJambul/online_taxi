@@ -5,6 +5,7 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    id("com.google.gms.google-services")
 }
 
 val localProps = Properties().apply {
@@ -13,7 +14,7 @@ val localProps = Properties().apply {
 }
 
 android {
-    namespace = "com.example.online_taxi_mobile"
+    namespace = "com.online.taxi"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -31,7 +32,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.online_taxi_mobile"
+        applicationId = "com.online.taxi"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -53,4 +54,8 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    implementation("com.yandex.android:maps.mobile:4.4.0-full")
 }

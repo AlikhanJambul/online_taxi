@@ -21,14 +21,14 @@ type Service interface {
 }
 
 type service struct {
-	repo        domain.Repository
-	tm          *jwt.TokenManager
-	fileStorage minio.FileStorage
-	minioPort   string
+	repo             domain.Repository
+	tm               *jwt.TokenManager
+	fileStorage      minio.FileStorage
+	minioExternalHost string
 }
 
-func NewService(repo domain.Repository, tm *jwt.TokenManager, fileStorage minio.FileStorage, minioPort string) Service {
-	return &service{repo: repo, tm: tm, fileStorage: fileStorage, minioPort: minioPort}
+func NewService(repo domain.Repository, tm *jwt.TokenManager, fileStorage minio.FileStorage, minioExternalHost string) Service {
+	return &service{repo: repo, tm: tm, fileStorage: fileStorage, minioExternalHost: minioExternalHost}
 }
 
 func (s *service) CreateUser(ctx context.Context, dto RegisterRequestDTO) (*AuthResponseDTO, error) {
@@ -140,8 +140,7 @@ func (s *service) GetAvatarUploadURL(ctx context.Context, expiry time.Duration) 
 		return "", "", err
 	}
 
-	// TODO: Нужно менять на ip компа
-	fileURL := fmt.Sprintf("http://minio:%s/avatars/%s", s.minioPort, objectName)
+	fileURL := fmt.Sprintf("http://%s/avatars/%s", s.minioExternalHost, objectName)
 
 	return uploadURL, fileURL, nil
 }

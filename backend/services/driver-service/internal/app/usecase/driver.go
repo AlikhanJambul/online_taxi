@@ -16,13 +16,13 @@ type Service interface {
 }
 
 type service struct {
-	repo        domain.Repository
-	fileStorage minio.FileStorage
-	minioPort   string
+	repo             domain.Repository
+	fileStorage      minio.FileStorage
+	minioExternalHost string
 }
 
-func NewService(repo domain.Repository, fileStorage minio.FileStorage, minioPort string) Service {
-	return &service{repo: repo, fileStorage: fileStorage, minioPort: minioPort}
+func NewService(repo domain.Repository, fileStorage minio.FileStorage, minioExternalHost string) Service {
+	return &service{repo: repo, fileStorage: fileStorage, minioExternalHost: minioExternalHost}
 }
 
 func (s *service) CreateDriver(ctx context.Context, dto CreateRequestDTO) (*domain.Driver, error) {
@@ -72,8 +72,7 @@ func (s *service) GetCarUploadURL(ctx context.Context, expiry time.Duration) (st
 		return "", "", err
 	}
 
-	// TODO: Нужно менять на ip компа
-	fileURL := fmt.Sprintf("http://minio:%s/cars/%s", s.minioPort, objectName)
+	fileURL := fmt.Sprintf("http://%s/cars/%s", s.minioExternalHost, objectName)
 
 	return uploadURL, fileURL, nil
 }

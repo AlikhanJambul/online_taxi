@@ -2,7 +2,7 @@
     <application
         android:networkSecurityConfig="@xml/network_security_config"
         android:label="online_taxi_mobile"
-        android:name="${applicationName}"
+        android:name="com.online.taxi.MainApplication"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
