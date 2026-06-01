@@ -30,21 +30,20 @@ class _PassengerProfileScreenState
     try {
       final repo = ref.read(authRepositoryProvider);
 
-      // 1. Получаем presigned URL — сервер сам сохраняет file_url в профиль
-      final uploadUrl = await repo.getAvatarUploadUrl();
-      final fileUrl   = await repo.getAvatarFileUrl();
+      // 1. Получаем presigned upload URL и постоянный file URL одним вызовом
+      final info = await repo.getAvatarUploadUrl();
 
       // 2. Загружаем файл напрямую в MinIO
       final bytes    = await File(file.path).readAsBytes();
       final response = await http.put(
-        Uri.parse(uploadUrl),
+        Uri.parse(info.uploadUrl),
         headers: {'Content-Type': 'image/jpeg'},
         body: bytes,
       );
       if (response.statusCode != 200) throw Exception('upload failed');
 
-      // 3. Обновляем state локально (сервер уже сохранил при шаге 1)
-      ref.read(authProvider.notifier).setAvatarUrl(fileUrl);
+      // 3. Обновляем state локально
+      ref.read(authProvider.notifier).setAvatarUrl(info.fileUrl);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

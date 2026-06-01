@@ -32,7 +32,7 @@ func (r *repository) SaveDriver(ctx context.Context, driver *domain.Driver) (str
 	var status string
 
 	err := r.db.QueryRow(ctx, query,
-		driver.UserID, driver.CarMake, driver.CarModel, driver.CarColor, driver.LicensePlate, "",
+		driver.UserID, driver.CarMake, driver.CarModel, driver.CarColor, driver.LicensePlate, driver.CarPhotoURL,
 	).Scan(&status)
 
 	if err != nil {

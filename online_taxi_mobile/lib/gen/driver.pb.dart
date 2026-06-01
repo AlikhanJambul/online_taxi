@@ -26,12 +26,14 @@ class CreateProfileRequest extends $pb.GeneratedMessage {
     $core.String? carModel,
     $core.String? carColor,
     $core.String? licensePlate,
+    $core.String? carPhotoUrl,
   }) {
     final result = create();
     if (carMake != null) result.carMake = carMake;
     if (carModel != null) result.carModel = carModel;
     if (carColor != null) result.carColor = carColor;
     if (licensePlate != null) result.licensePlate = licensePlate;
+    if (carPhotoUrl != null) result.carPhotoUrl = carPhotoUrl;
     return result;
   }
 
@@ -52,6 +54,7 @@ class CreateProfileRequest extends $pb.GeneratedMessage {
     ..aOS(2, _omitFieldNames ? '' : 'carModel')
     ..aOS(3, _omitFieldNames ? '' : 'carColor')
     ..aOS(4, _omitFieldNames ? '' : 'licensePlate')
+    ..aOS(5, _omitFieldNames ? '' : 'carPhotoUrl')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -108,6 +111,15 @@ class CreateProfileRequest extends $pb.GeneratedMessage {
   $core.bool hasLicensePlate() => $_has(3);
   @$pb.TagNumber(4)
   void clearLicensePlate() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get carPhotoUrl => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set carPhotoUrl($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasCarPhotoUrl() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCarPhotoUrl() => $_clearField(5);
 }
 
 class DriverProfileResponse extends $pb.GeneratedMessage {

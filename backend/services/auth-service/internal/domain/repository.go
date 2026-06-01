@@ -14,4 +14,5 @@ type Repository interface {
 	GetUserByDeviceID(ctx context.Context, deviceID string) (*User, error)
 	GetUserByRefreshToken(ctx context.Context, refreshToken string) (*User, error)
 	UpdateFCMToken(ctx context.Context, userID, deviceID, fcmToken string) error
+	UpdateAvatarURL(ctx context.Context, userID, avatarURL string) error
 }

@@ -152,7 +152,7 @@ func (h *Handler) GetAvatarsUploadURL(ctx context.Context, req *emptypb.Empty) (
 		return nil, status.Error(codes.Unauthenticated, domain.ErrUnauth.Error())
 	}
 
-	uploadURL, fileURL, err := h.service.GetAvatarUploadURL(ctx, time.Minute*15)
+	uploadURL, fileURL, err := h.service.GetAvatarUploadURL(ctx, id, time.Minute*15)
 	if err != nil {
 		h.logger.Warn("ошибка с получением ссылки: %v", err)
 		return nil, status.Error(codes.Internal, domain.ErrInternal.Error())

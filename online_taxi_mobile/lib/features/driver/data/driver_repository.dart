@@ -42,9 +42,9 @@ class DriverRepository {
     return await _driverClient.getProfile(Empty());
   }
 
-  Future<String> getCarUploadUrl() async {
+  Future<({String uploadUrl, String fileUrl})> getCarUploadUrl() async {
     final res = await _driverClient.getCarUploadURL(Empty());
-    return res.uploadUrl;
+    return (uploadUrl: res.uploadUrl, fileUrl: res.fileUrl);
   }
 
   Future<void> createProfile({
@@ -52,12 +52,14 @@ class DriverRepository {
     required String carModel,
     required String carColor,
     required String licensePlate,
+    required String carPhotoUrl,
   }) async {
     await _driverClient.createProfile(dpb.CreateProfileRequest(
       carMake:      carMake,
       carModel:     carModel,
       carColor:     carColor,
       licensePlate: licensePlate,
+      carPhotoUrl:  carPhotoUrl,
     ));
   }
 

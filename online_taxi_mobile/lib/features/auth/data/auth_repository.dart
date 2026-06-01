@@ -48,6 +48,7 @@ class AuthRepository {
       userId:       res.userId,
       role:         res.role.name,
     );
+    await _storage.saveProfile(fullName: fullName, email: email, phone: phone);
     _grpc.interceptor.updateToken(res.accessToken);
     await _sendFcmToken(deviceId);
 
@@ -72,6 +73,10 @@ class AuthRepository {
       userId:       res.userId,
       role:         res.role.name,
     );
+    // Обновляем только email — имя и телефон уже в storage с момента регистрации
+    final savedName  = await _storage.getFullName() ?? '';
+    final savedPhone = await _storage.getPhone()    ?? '';
+    await _storage.saveProfile(fullName: savedName, email: email, phone: savedPhone);
     _grpc.interceptor.updateToken(res.accessToken);
     await _sendFcmToken(deviceId);
 
@@ -117,10 +122,15 @@ class AuthRepository {
     }
   }
 
-  Future<String> getAvatarUploadUrl() async {
+  Future<({String uploadUrl, String fileUrl})> getAvatarUploadUrl() async {
     final res = await _client.getAvatarsUploadURL(Empty());
-    return res.uploadUrl;
+    return (uploadUrl: res.uploadUrl, fileUrl: res.fileUrl);
   }
+
+  Future<String?> getSavedName()      => _storage.getFullName();
+  Future<String?> getSavedEmail()     => _storage.getEmail();
+  Future<String?> getSavedPhone()     => _storage.getPhone();
+  Future<String?> getSavedAvatarUrl() => _storage.getAvatarUrl();
 
   Future<DriverSetupStatus> checkDriverSetupStatus() async {
     try {

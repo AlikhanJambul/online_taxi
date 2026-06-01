@@ -5,4 +5,5 @@ type CreateRequestDTO struct {
 	CarModel     string
 	CarColor     string
 	LicensePlate string
+	CarPhotoURL  string
 }

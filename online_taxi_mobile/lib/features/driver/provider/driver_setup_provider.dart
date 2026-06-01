@@ -35,12 +35,12 @@ class DriverSetupNotifier extends StateNotifier<DriverSetupState> {
   }) async {
     try {
       state = state.copyWith(stage: SetupStage.uploadingAvatar);
-      final avatarUrl = await _authRepo.getAvatarUploadUrl();
-      await _uploadFile(avatarUrl, avatarFile);
+      final avatarInfo = await _authRepo.getAvatarUploadUrl();
+      await _uploadFile(avatarInfo.uploadUrl, avatarFile);
 
       state = state.copyWith(stage: SetupStage.uploadingCar);
-      final carUrl = await _driverRepo.getCarUploadUrl();
-      await _uploadFile(carUrl, carFile);
+      final carInfo = await _driverRepo.getCarUploadUrl();
+      await _uploadFile(carInfo.uploadUrl, carFile);
 
       state = state.copyWith(stage: SetupStage.creatingProfile);
       await _driverRepo.createProfile(
@@ -48,6 +48,7 @@ class DriverSetupNotifier extends StateNotifier<DriverSetupState> {
         carModel:     carModel,
         carColor:     carColor,
         licensePlate: licensePlate,
+        carPhotoUrl:  carInfo.fileUrl,
       );
 
       state = state.copyWith(stage: SetupStage.done);
@@ -60,15 +61,15 @@ class DriverSetupNotifier extends StateNotifier<DriverSetupState> {
     }
   }
 
-  Future<void> _uploadFile(String url, File file) async {
+Future<void> _uploadFile(String url, File file) async {
     final bytes    = await file.readAsBytes();
     final response = await http.put(
       Uri.parse(url),
       body:    bytes,
-      headers: {'Content-Type': 'image/jpeg'},
     );
+
     if (response.statusCode != 200) {
-      throw Exception('Ошибка загрузки (${response.statusCode})');
+      throw Exception('Ошибка загрузки (${response.statusCode}): ${response.body}');
     }
   }
 

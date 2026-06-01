@@ -190,6 +190,8 @@ func (s *service) FindAndNotifyDrivers(ctx context.Context, trip *domain.Trip) e
 	s.logger.Info("🔥 УСПЕХ: Отправляем Push-уведомления %d водителям для заказа %s", len(tokens), trip.ID)
 	response := domain.NotifyNewTrip(trip.ID)
 
+	estimate := domain.CalculatePrice(trip.PickupLat, trip.PickupLng, trip.DestLat, trip.DestLng)
+
 	data := map[string]string{
 		"type":           "new_trip",
 		"trip_id":        trip.ID,
@@ -198,6 +200,7 @@ func (s *service) FindAndNotifyDrivers(ctx context.Context, trip *domain.Trip) e
 		"pickup_lat":     strconv.FormatFloat(trip.PickupLat, 'f', 6, 64),
 		"pickup_lng":     strconv.FormatFloat(trip.PickupLng, 'f', 6, 64),
 		"price_kzt":      strconv.FormatInt(trip.PriceKZT, 10),
+		"distance_km":    strconv.FormatFloat(estimate.DistanceKm, 'f', 2, 64),
 	}
 	deadTokens, err := s.notify.SendPushMulti(ctx, tokens, response.Title, response.Body, data)
 	if err != nil {

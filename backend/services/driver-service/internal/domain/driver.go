@@ -6,5 +6,6 @@ type Driver struct {
 	CarModel     string `json:"car_model,omitempty"`
 	CarColor     string `json:"car_color,omitempty"`
 	LicensePlate string `json:"license_plate,omitempty"`
+	CarPhotoURL  string `json:"car_url,omitempty"`
 	Status       string `json:"status,omitempty"`
 }

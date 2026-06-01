@@ -47,15 +47,18 @@ func (r *repository) SaveUser(ctx context.Context, data *domain.User, token stri
 }
 
 func (r *repository) SaveSession(ctx context.Context, userID string, token string, deviceID string) error {
+	// При логине fcm_token ещё неизвестен — используем уникальную заглушку.
+	// UpdateFCMToken вызывается сразу после и устанавливает настоящий токен.
+	pendingFCM := fmt.Sprintf("pending_%s_%s", userID, deviceID)
 	query := `
-		INSERT INTO sessions (user_id, refresh_token, device_id, expires_at)
-		VALUES ($1, $2, $3, NOW() + INTERVAL '30 days')
+		INSERT INTO sessions (user_id, refresh_token, device_id, fcm_token, expires_at)
+		VALUES ($1, $2, $3, $4, NOW() + INTERVAL '30 days')
 		ON CONFLICT (user_id, device_id) DO UPDATE
 		SET refresh_token = EXCLUDED.refresh_token,
 		    expires_at    = EXCLUDED.expires_at;
 	`
 
-	_, err := r.db.Exec(ctx, query, userID, token, deviceID)
+	_, err := r.db.Exec(ctx, query, userID, token, deviceID, pendingFCM)
 	return err
 }
 
@@ -79,6 +82,14 @@ func (r *repository) GetUserByEmail(ctx context.Context, email string) (*domain.
 	}
 
 	return &user, nil
+}
+
+func (r *repository) UpdateAvatarURL(ctx context.Context, userID, avatarURL string) error {
+	_, err := r.db.Exec(ctx,
+		`UPDATE users SET avatar_url = $1 WHERE id = $2`,
+		avatarURL, userID,
+	)
+	return err
 }
 
 func (r *repository) UpdateFCMToken(ctx context.Context, userID, deviceID, fcmToken string) error {

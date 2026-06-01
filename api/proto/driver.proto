@@ -24,6 +24,7 @@ message CreateProfileRequest {
   string car_model = 2;
   string car_color = 3;
   string license_plate = 4;
+  string car_photo_url = 5;
 }
 
 message DriverProfileResponse {

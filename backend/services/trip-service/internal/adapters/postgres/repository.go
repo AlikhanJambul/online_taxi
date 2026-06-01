@@ -173,7 +173,7 @@ func (r *repository) CancelTrip(ctx context.Context, tripID, userID string) (*do
 
 func (r *repository) DeleteFCMTokens(ctx context.Context, tokens []string) error {
 	_, err := r.db.Exec(ctx,
-		`UPDATE sessions SET fcm_token = NULL WHERE fcm_token = ANY($1)`,
+		`DELETE FROM sessions WHERE fcm_token = ANY($1)`,
 		tokens,
 	)
 	return err

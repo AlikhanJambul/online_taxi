@@ -1,317 +1,239 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:yandex_mapkit/yandex_mapkit.dart';
-import '../provider/driver_provider.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/utils/map_markers.dart';
-import '../../../features/auth/provider/auth_provider.dart';
+import '../../auth/provider/auth_provider.dart';
+import '../provider/driver_provider.dart';
 
 class DriverHomeScreen extends ConsumerWidget {
   const DriverHomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state   = ref.watch(driverProvider);
-    final markers = ref.watch(mapMarkersProvider).valueOrNull;
-
-    ref.listen(driverProvider, (prev, next) {
-      if (next.status == DriverStatus.enRoute && prev?.status != DriverStatus.enRoute) {
-        context.push('/driver/trip');
-      }
-    });
+    final auth        = ref.watch(authProvider);
+    final driver      = ref.watch(driverProvider);
+    final firstName   = auth.name.isNotEmpty
+        ? auth.name.split(' ').first
+        : 'Водитель';
+    final isOnline    = driver.status != DriverStatus.offline;
+    final isInTrip    = driver.status == DriverStatus.enRoute ||
+                        driver.status == DriverStatus.arrived  ||
+                        driver.status == DriverStatus.inTrip;
 
     return Scaffold(
-      body: Stack(
-        children: [
-          YandexMap(
-            onMapCreated: (ctrl) => ctrl.moveCamera(
-              CameraUpdate.newCameraPosition(const CameraPosition(
-                target: Point(latitude: 51.1605, longitude: 71.4704),
-                zoom: 13,
-              )),
-            ),
-            mapObjects: state.lat != null && markers != null ? [
-              PlacemarkMapObject(
-                mapId: const MapObjectId('driver'),
-                point: Point(latitude: state.lat!, longitude: state.lng!),
-                icon: PlacemarkIcon.single(PlacemarkIconStyle(
-                  image: BitmapDescriptor.fromBytes(markers.car),
-                )),
-              ),
-            ] : [],
-          ),
+      backgroundColor: AppTheme.bg,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
 
-          // Шапка
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(children: [
+              // Приветствие
+              Row(children: [
                 Container(
-                  width: 40, height: 40,
+                  width: 44, height: 44,
                   decoration: BoxDecoration(
-                    color: AppTheme.card,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.border),
+                    color: AppTheme.primary.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.local_taxi_rounded, color: AppTheme.primary, size: 20),
+                  child: const Icon(Icons.drive_eta_rounded,
+                      color: AppTheme.primary, size: 22),
                 ),
                 const SizedBox(width: 12),
-                const Text('Водитель', style: TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Добро пожаловать',
+                        style: TextStyle(
+                            color: AppTheme.textSecondary, fontSize: 13)),
+                    Text(firstName,
+                        style: const TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700)),
+                  ],
+                ),
                 const Spacer(),
-                GestureDetector(
-                  onTap: () {
-                    ref.read(authProvider.notifier).logout();
-                    context.go('/login');
-                  },
-                  child: Container(
-                    width: 40, height: 40,
-                    decoration: BoxDecoration(
-                      color: AppTheme.card,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.border),
+                // Статус-бейдж
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isOnline
+                        ? AppTheme.online.withValues(alpha: 0.15)
+                        : AppTheme.card,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isOnline
+                          ? AppTheme.online.withValues(alpha: 0.4)
+                          : AppTheme.border,
                     ),
-                    child: const Icon(Icons.logout_rounded, color: AppTheme.textSecondary, size: 18),
+                  ),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Container(
+                      width: 7, height: 7,
+                      decoration: BoxDecoration(
+                        color: isOnline ? AppTheme.online : AppTheme.textSecondary,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      isOnline ? 'На линии' : 'Не в сети',
+                      style: TextStyle(
+                        color: isOnline
+                            ? AppTheme.online
+                            : AppTheme.textSecondary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ]),
+                ),
+              ]),
+
+              const SizedBox(height: 32),
+
+              // Основная карточка-кнопка
+              GestureDetector(
+                onTap: () => context.push('/driver/map'),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    color: isOnline ? AppTheme.online : AppTheme.primary,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isInTrip
+                                ? 'Вы в поездке'
+                                : isOnline
+                                    ? 'Вы на линии'
+                                    : 'Принимать заказы',
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            isInTrip
+                                ? 'Нажмите чтобы открыть карту'
+                                : isOnline
+                                    ? 'Ожидаем входящие заказы...'
+                                    : 'Нажмите чтобы начать работу',
+                            style: const TextStyle(
+                                color: Colors.black54, fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      width: 52, height: 52,
+                      decoration: BoxDecoration(
+                        color: Colors.black12,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(
+                        isInTrip
+                            ? Icons.directions_car_rounded
+                            : isOnline
+                                ? Icons.wifi_rounded
+                                : Icons.power_settings_new_rounded,
+                        color: Colors.black,
+                        size: 26,
+                      ),
+                    ),
+                  ]),
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              const Text('Статистика',
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  )),
+              const SizedBox(height: 16),
+
+              Row(children: [
+                Expanded(
+                  child: _StatCard(
+                    icon: Icons.route_rounded,
+                    label: 'Поездок',
+                    value: '—',
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _StatCard(
+                    icon: Icons.star_rounded,
+                    label: 'Рейтинг',
+                    value: '—',
+                    iconColor: AppTheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _StatCard(
+                    icon: Icons.account_balance_wallet_rounded,
+                    label: 'Заработок',
+                    value: '—',
+                    iconColor: AppTheme.online,
                   ),
                 ),
               ]),
-            ),
+            ],
           ),
-
-          // Нижняя панель с анимацией между состояниями
-          Positioned(
-            left: 0, right: 0, bottom: 0,
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppTheme.surface,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                border: Border.all(color: AppTheme.border),
-              ),
-              padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).padding.bottom + 20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Center(child: Container(
-                    width: 36, height: 4,
-                    decoration: BoxDecoration(
-                      color: AppTheme.border, borderRadius: BorderRadius.circular(2)),
-                  )),
-                  const SizedBox(height: 20),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 320),
-                    switchInCurve:  Curves.easeOutCubic,
-                    switchOutCurve: Curves.easeInCubic,
-                    transitionBuilder: (child, animation) => FadeTransition(
-                      opacity: animation,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0, 0.12),
-                          end:   Offset.zero,
-                        ).animate(animation),
-                        child: child,
-                      ),
-                    ),
-                    child: _panelContent(context, state, ref),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
-
-  Widget _panelContent(BuildContext context, DriverState state, WidgetRef ref) {
-    switch (state.status) {
-      case DriverStatus.online:
-        return _OnlineWidget(
-          key: const ValueKey('online'),
-          onGoOffline: () => ref.read(driverProvider.notifier).goOffline(),
-        );
-      case DriverStatus.hasTrip when state.incomingTrip != null:
-        return _IncomingTripWidget(
-          key: ValueKey('trip_${state.incomingTrip!.id}'),
-          trip:      state.incomingTrip!,
-          onAccept:  () => ref.read(driverProvider.notifier).acceptTrip(state.incomingTrip!.id),
-          onDecline: () => ref.read(driverProvider.notifier).declineTrip(),
-        );
-      case DriverStatus.enRoute:
-      case DriverStatus.arrived:
-      case DriverStatus.inTrip:
-        return _InTripWidget(
-          key: const ValueKey('inTrip'),
-          onOpenTrip: () => context.push('/driver/trip'),
-        );
-      default:
-        return _OfflineWidget(
-          key: const ValueKey('offline'),
-          onGoOnline: () => ref.read(driverProvider.notifier).goOnline(),
-        );
-    }
-  }
 }
 
-// ── Offline ──────────────────────────────────────────────────────────────────
+class _StatCard extends StatelessWidget {
+  final IconData icon;
+  final String   label;
+  final String   value;
+  final Color    iconColor;
 
-class _OfflineWidget extends StatelessWidget {
-  final VoidCallback onGoOnline;
-  const _OfflineWidget({super.key, required this.onGoOnline});
-
-  @override
-  Widget build(BuildContext context) => Column(children: [
-    Container(
-      width: 64, height: 64,
-      decoration: BoxDecoration(
-        color: AppTheme.card, shape: BoxShape.circle,
-        border: Border.all(color: AppTheme.border),
-      ),
-      child: const Icon(Icons.power_settings_new_rounded, color: AppTheme.textSecondary, size: 28),
-    ),
-    const SizedBox(height: 14),
-    const Text('Вы не в сети', style: TextStyle(
-      fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
-    const SizedBox(height: 4),
-    const Text('Нажмите кнопку чтобы начать принимать заказы',
-      style: TextStyle(color: AppTheme.textSecondary, fontSize: 13), textAlign: TextAlign.center),
-    const SizedBox(height: 20),
-    ElevatedButton(onPressed: onGoOnline, child: const Text('Выйти на линию')),
-  ]);
-}
-
-// ── Online ────────────────────────────────────────────────────────────────────
-
-class _OnlineWidget extends StatelessWidget {
-  final VoidCallback onGoOffline;
-  const _OnlineWidget({super.key, required this.onGoOffline});
-
-  @override
-  Widget build(BuildContext context) => Column(children: [
-    Container(
-      width: 64, height: 64,
-      decoration: BoxDecoration(
-        color: AppTheme.online.withOpacity(0.15), shape: BoxShape.circle,
-        border: Border.all(color: AppTheme.online.withOpacity(0.4), width: 2),
-      ),
-      child: const Icon(Icons.wifi_rounded, color: AppTheme.online, size: 28),
-    ),
-    const SizedBox(height: 14),
-    const Text('Вы на линии', style: TextStyle(
-      fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
-    const SizedBox(height: 4),
-    const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-      SizedBox(width: 14, height: 14,
-        child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary)),
-      SizedBox(width: 8),
-      Text('Ожидаем заказы...', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
-    ]),
-    const SizedBox(height: 20),
-    OutlinedButton(
-      onPressed: onGoOffline,
-      style: OutlinedButton.styleFrom(
-        minimumSize: const Size(double.infinity, 50),
-        side: const BorderSide(color: AppTheme.border),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        foregroundColor: AppTheme.textSecondary,
-      ),
-      child: const Text('Уйти с линии'),
-    ),
-  ]);
-}
-
-// ── In trip (fallback if user somehow returns to home) ────────────────────────
-
-class _InTripWidget extends StatelessWidget {
-  final VoidCallback onOpenTrip;
-  const _InTripWidget({super.key, required this.onOpenTrip});
-
-  @override
-  Widget build(BuildContext context) => Column(children: [
-    const Icon(Icons.directions_car_rounded, color: AppTheme.primary, size: 36),
-    const SizedBox(height: 12),
-    const Text('Вы в поездке', style: TextStyle(
-      fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
-    const SizedBox(height: 20),
-    ElevatedButton(onPressed: onOpenTrip, child: const Text('Вернуться к поездке')),
-  ]);
-}
-
-// ── Incoming trip ─────────────────────────────────────────────────────────────
-
-class _IncomingTripWidget extends StatelessWidget {
-  final IncomingTrip trip;
-  final VoidCallback onAccept;
-  final VoidCallback onDecline;
-  const _IncomingTripWidget({
-    super.key,
-    required this.trip,
-    required this.onAccept,
-    required this.onDecline,
+  const _StatCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.iconColor = AppTheme.textSecondary,
   });
 
   @override
-  Widget build(BuildContext context) => Column(children: [
-    Row(children: [
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: AppTheme.primary.withOpacity(0.15),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Text('Новый заказ', style: TextStyle(
-          color: AppTheme.primary, fontWeight: FontWeight.w600, fontSize: 12)),
-      ),
-      const Spacer(),
-      Text('${trip.priceKzt} ₸', style: const TextStyle(
-        color: AppTheme.primary, fontSize: 24, fontWeight: FontWeight.w700)),
-    ]),
-    const SizedBox(height: 14),
-    Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppTheme.card,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.border),
-      ),
-      child: Column(children: [
-        Row(children: [
-          const Icon(Icons.radio_button_checked, color: AppTheme.success, size: 16),
-          const SizedBox(width: 8),
-          Expanded(child: Text(trip.pickupAddress,
-            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
-            overflow: TextOverflow.ellipsis)),
-          Text('${trip.distanceKm.toStringAsFixed(1)} км',
-            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
-        ]),
-        const Padding(padding: EdgeInsets.only(left: 8),
-          child: Divider(color: AppTheme.border, height: 16)),
-        Row(children: [
-          const Icon(Icons.location_on_rounded, color: AppTheme.primary, size: 16),
-          const SizedBox(width: 8),
-          Expanded(child: Text(trip.destAddress,
-            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
-            overflow: TextOverflow.ellipsis)),
-        ]),
-      ]),
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+    decoration: BoxDecoration(
+      color: AppTheme.card,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: AppTheme.border),
     ),
-    const SizedBox(height: 14),
-    Row(children: [
-      Expanded(child: OutlinedButton(
-        onPressed: onDecline,
-        style: OutlinedButton.styleFrom(
-          minimumSize: const Size(0, 50),
-          side: const BorderSide(color: AppTheme.border),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          foregroundColor: AppTheme.textSecondary,
-        ),
-        child: const Text('Отказать'),
-      )),
-      const SizedBox(width: 12),
-      Expanded(child: ElevatedButton(
-        onPressed: onAccept,
-        child: const Text('Принять'),
-      )),
+    child: Column(children: [
+      Icon(icon, color: iconColor, size: 22),
+      const SizedBox(height: 8),
+      Text(value,
+          style: const TextStyle(
+            color: AppTheme.textPrimary,
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+          )),
+      const SizedBox(height: 2),
+      Text(label,
+          style: const TextStyle(
+              color: AppTheme.textSecondary, fontSize: 11)),
     ]),
-  ]);
+  );
 }

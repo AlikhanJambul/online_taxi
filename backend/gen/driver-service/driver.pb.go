@@ -80,6 +80,7 @@ type CreateProfileRequest struct {
 	CarModel      string                 `protobuf:"bytes,2,opt,name=car_model,json=carModel,proto3" json:"car_model,omitempty"`
 	CarColor      string                 `protobuf:"bytes,3,opt,name=car_color,json=carColor,proto3" json:"car_color,omitempty"`
 	LicensePlate  string                 `protobuf:"bytes,4,opt,name=license_plate,json=licensePlate,proto3" json:"license_plate,omitempty"`
+	CarPhotoUrl   string                 `protobuf:"bytes,5,opt,name=car_photo_url,json=carPhotoUrl,proto3" json:"car_photo_url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -138,6 +139,13 @@ func (x *CreateProfileRequest) GetCarColor() string {
 func (x *CreateProfileRequest) GetLicensePlate() string {
 	if x != nil {
 		return x.LicensePlate
+	}
+	return ""
+}
+
+func (x *CreateProfileRequest) GetCarPhotoUrl() string {
+	if x != nil {
+		return x.CarPhotoUrl
 	}
 	return ""
 }

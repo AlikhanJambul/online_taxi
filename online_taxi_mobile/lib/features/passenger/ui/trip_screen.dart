@@ -17,9 +17,9 @@ class _PassengerTripScreenState extends ConsumerState<PassengerTripScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final state   = ref.watch(passengerProvider);
-    final trip    = state.trip;
-    final markers = ref.watch(mapMarkersProvider).valueOrNull;
+    final state = ref.watch(passengerProvider);
+    final trip  = state.trip;
+    ref.watch(mapMarkersProvider);
 
     // Когда поездка завершена или отменена — возвращаемся на карту
     ref.listen(passengerProvider, (prev, next) {

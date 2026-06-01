@@ -28,11 +28,8 @@ func Run() {
 	}
 	defer db.Close()
 
-	// TODO: возможно заменить на ip компа
-	endpoint := fmt.Sprintf("minio:%s", cfg.S3.Port)
-
 	tm := jwt.NewTokenManager(cfg.SecretKey)
-	s3Storage, err := minio.NewFileStorage(endpoint, cfg.S3.User, cfg.S3.Password, "cars", cfg.S3.ExternalHost)
+	s3Storage, err := minio.NewFileStorage(cfg.S3.User, cfg.S3.Password, "cars", cfg.S3.ExternalHost)
 	repo := postgres.NewRepo(db)
 	service := usecase.NewService(repo, s3Storage, cfg.S3.ExternalHost)
 

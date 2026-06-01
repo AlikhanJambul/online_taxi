@@ -11,5 +11,6 @@ func toCreateDTO(req *pb.CreateProfileRequest) usecase.CreateRequestDTO {
 		CarModel:     req.CarModel,
 		CarColor:     req.CarColor,
 		LicensePlate: req.LicensePlate,
+		CarPhotoURL:  req.CarPhotoUrl,
 	}
 }

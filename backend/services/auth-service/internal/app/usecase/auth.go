@@ -17,7 +17,7 @@ type Service interface {
 	ClearSession(ctx context.Context, dto LogoutRequestDTO) error
 	RefreshToken(ctx context.Context, dto RefreshRequestDTO) (*RefreshResponseDTO, error)
 	UpdateFCMToken(ctx context.Context, dto UpdateFCMRequestDTO) error
-	GetAvatarUploadURL(ctx context.Context, expiry time.Duration) (string, string, error)
+	GetAvatarUploadURL(ctx context.Context, userID string, expiry time.Duration) (string, string, error)
 }
 
 type service struct {
@@ -130,10 +130,8 @@ func (s *service) UpdateFCMToken(ctx context.Context, dto UpdateFCMRequestDTO) e
 	return s.repo.UpdateFCMToken(ctx, dto.UserID, dto.DeviceID, dto.FCMToken)
 }
 
-func (s *service) GetAvatarUploadURL(ctx context.Context, expiry time.Duration) (string, string, error) {
-	str := uuid.New().String()
-
-	objectName := fmt.Sprintf("%s/avatars.jpg", str)
+func (s *service) GetAvatarUploadURL(ctx context.Context, userID string, expiry time.Duration) (string, string, error) {
+	objectName := fmt.Sprintf("%s/avatars.jpg", uuid.New().String())
 
 	uploadURL, err := s.fileStorage.GenerateUploadURL(ctx, "avatars", objectName, expiry)
 	if err != nil {
@@ -141,6 +139,10 @@ func (s *service) GetAvatarUploadURL(ctx context.Context, expiry time.Duration) 
 	}
 
 	fileURL := fmt.Sprintf("http://%s/avatars/%s", s.minioExternalHost, objectName)
+
+	if err := s.repo.UpdateAvatarURL(ctx, userID, fileURL); err != nil {
+		return "", "", err
+	}
 
 	return uploadURL, fileURL, nil
 }

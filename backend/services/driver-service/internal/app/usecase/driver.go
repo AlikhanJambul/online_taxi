@@ -39,6 +39,7 @@ func (s *service) CreateDriver(ctx context.Context, dto CreateRequestDTO) (*doma
 		CarModel:     dto.CarModel,
 		CarMake:      dto.CarMake,
 		LicensePlate: dto.LicensePlate,
+		CarPhotoURL:  dto.CarPhotoURL,
 	}
 
 	status, err := s.repo.SaveDriver(ctx, driver)
