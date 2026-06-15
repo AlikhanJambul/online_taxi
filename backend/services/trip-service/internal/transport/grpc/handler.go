@@ -3,7 +3,9 @@ package grpc
 import (
 	"context"
 	"errors"
+	sdk "google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"io"
@@ -99,6 +101,19 @@ func (h *Handler) GetTrip(ctx context.Context, req *pb.GetTripRequest) (*pb.Trip
 	if err != nil {
 		h.logger.Error("ошибка получения поездки %s: %v", req.TripId, err)
 		return nil, status.Error(codes.NotFound, "поездка не найдена")
+	}
+
+	// Передаём данные машины через gRPC-заголовки (не ломая proto-схему)
+	if trip.CarMake != "" {
+		_ = sdk.SetHeader(ctx, metadata.Pairs(
+			"car-make", trip.CarMake,
+			"car-model", trip.CarModel,
+			"car-color", trip.CarColor,
+			"license-plate", trip.LicensePlate,
+		))
+	}
+	if trip.DriverAvatarURL != "" {
+		_ = sdk.SetHeader(ctx, metadata.Pairs("driver-avatar", trip.DriverAvatarURL))
 	}
 
 	var driverID string
@@ -250,6 +265,50 @@ func (h *Handler) CancelTrip(ctx context.Context, req *pb.TripIDRequest) (*pb.Tr
 	}
 
 	return toTripResponse(trip), nil
+}
+
+func (h *Handler) SubmitReview(ctx context.Context, req *pb.TripIDRequest) (*emptypb.Empty, error) {
+	passengerID, ok := ctx.Value("userID").(string)
+	if !ok || passengerID == "" {
+		return nil, status.Error(codes.Unauthenticated, "неавторизован")
+	}
+	if req.Score < 1 || req.Score > 5 {
+		return nil, status.Error(codes.InvalidArgument, "оценка должна быть от 1 до 5")
+	}
+	if err := h.service.SubmitReview(ctx, req.TripId, passengerID, int(req.Score)); err != nil {
+		h.logger.Error("SubmitReview: %v", err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (h *Handler) GetTripHistory(ctx context.Context, req *emptypb.Empty) (*pb.TripHistoryResponse, error) {
+	passengerID, ok := ctx.Value("userID").(string)
+	if !ok || passengerID == "" {
+		return nil, status.Error(codes.Unauthenticated, "неавторизован")
+	}
+
+	items, err := h.service.GetTripHistory(ctx, passengerID)
+	if err != nil {
+		h.logger.Error("GetTripHistory: %v", err)
+		return nil, status.Error(codes.Internal, domain.ErrInternal.Error())
+	}
+
+	pbItems := make([]*pb.TripHistoryItemPb, len(items))
+	for i, item := range items {
+		pbItems[i] = &pb.TripHistoryItemPb{
+			Id:            item.ID,
+			PickupAddress: item.PickupAddress,
+			DestAddress:   item.DestAddress,
+			PriceKzt:      item.PriceKZT,
+			FinishedAt:    item.FinishedAt,
+			DriverName:    item.DriverName,
+		}
+	}
+
+	resp := &pb.TripHistoryResponse{}
+	resp.Items = pbItems
+	return resp, nil
 }
 
 func (h *Handler) EstimateTrip(ctx context.Context, req *pb.EstimateRequest) (*pb.EstimateResponse, error) {

@@ -51,7 +51,7 @@ func Run() {
 
 	pb.RegisterDriverServiceServer(grpcServer, h)
 
-	log.Println("Auth-сервис успешно запущен на порту " + port)
+	log.Println("Driver-сервис успешно запущен на порту " + port)
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Ошибка при запуске gRPC сервера: %v", err)
 	}

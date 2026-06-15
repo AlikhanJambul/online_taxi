@@ -16,3 +16,4 @@ export interface Driver {
   license_plate: string
   status: 'PENDING' | 'APPROVED' | 'REJECTED'
 }
+

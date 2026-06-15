@@ -19,8 +19,8 @@ func NewLocationRepository(client *redis.Client) domain.DriverLocationRepository
 
 func (r *LocationRepository) UpdateLocation(ctx context.Context, driverID string, lat, lng float64) error {
 	err := r.client.GeoAdd(ctx, driversGeoKey, &redis.GeoLocation{
-		Name:      driverID, // ID водителя будет именем точки
-		Longitude: lng,      // ВНИМАНИЕ: Redis всегда просит сначала долготу (Lng), потом широту (Lat)!
+		Name:      driverID,
+		Longitude: lng,
 		Latitude:  lat,
 	}).Err()
 

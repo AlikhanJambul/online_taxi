@@ -666,6 +666,7 @@ func (x *EstimateResponse) GetDistanceKm() float64 {
 type TripIDRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	TripId        string                 `protobuf:"bytes,1,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
+	Score         int32                  `protobuf:"varint,2,opt,name=score,proto3" json:"score,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -705,6 +706,13 @@ func (x *TripIDRequest) GetTripId() string {
 		return x.TripId
 	}
 	return ""
+}
+
+func (x *TripIDRequest) GetScore() int32 {
+	if x != nil {
+		return x.Score
+	}
+	return 0
 }
 
 var File_trip_proto protoreflect.FileDescriptor

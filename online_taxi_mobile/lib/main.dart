@@ -58,6 +58,8 @@ class _TaxiAppState extends ConsumerState<TaxiApp> {
         destAddress:   data['dest_address']   ?? '',
         pickupLat:     double.tryParse(data['pickup_lat']  ?? '') ?? 0,
         pickupLng:     double.tryParse(data['pickup_lng']  ?? '') ?? 0,
+        destLat:       double.tryParse(data['dest_lat']    ?? '') ?? 0,
+        destLng:       double.tryParse(data['dest_lng']    ?? '') ?? 0,
         priceKzt:      int.tryParse   (data['price_kzt']   ?? '') ?? 0,
         distanceKm:    double.tryParse(data['distance_km'] ?? '') ?? 0,
       );

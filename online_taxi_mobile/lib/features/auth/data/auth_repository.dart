@@ -131,6 +131,7 @@ class AuthRepository {
   Future<String?> getSavedEmail()     => _storage.getEmail();
   Future<String?> getSavedPhone()     => _storage.getPhone();
   Future<String?> getSavedAvatarUrl() => _storage.getAvatarUrl();
+  Future<void>    saveAvatarUrl(String url) => _storage.saveAvatarUrl(url);
 
   Future<DriverSetupStatus> checkDriverSetupStatus() async {
     try {

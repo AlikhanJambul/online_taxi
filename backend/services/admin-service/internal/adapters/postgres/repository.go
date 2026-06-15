@@ -102,8 +102,8 @@ func (r *repository) GetDrivers(ctx context.Context) ([]domain.Driver, error) {
 				    dp.car_make, 
 				    dp.car_model, 
 				    dp.car_color, 
-				    dp.car_url, 
--- 				    dp.license_plate, 
+				    dp.car_url,
+				    dp.license_plate,
 				    dp.status
 				FROM 
 				    users u
@@ -132,6 +132,7 @@ func (r *repository) GetDrivers(ctx context.Context) ([]domain.Driver, error) {
 			&user.CarModel,
 			&user.CarColor,
 			&user.CarUrl,
+			&user.LicensePlate,
 			&user.Status,
 		); err != nil {
 			return nil, err

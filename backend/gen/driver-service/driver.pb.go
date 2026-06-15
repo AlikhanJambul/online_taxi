@@ -151,16 +151,19 @@ func (x *CreateProfileRequest) GetCarPhotoUrl() string {
 }
 
 type DriverProfileResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	CarMake       string                 `protobuf:"bytes,2,opt,name=car_make,json=carMake,proto3" json:"car_make,omitempty"`
-	CarModel      string                 `protobuf:"bytes,3,opt,name=car_model,json=carModel,proto3" json:"car_model,omitempty"`
-	CarColor      string                 `protobuf:"bytes,4,opt,name=car_color,json=carColor,proto3" json:"car_color,omitempty"`
-	LicensePlate  string                 `protobuf:"bytes,5,opt,name=license_plate,json=licensePlate,proto3" json:"license_plate,omitempty"`
-	CarUrl        string                 `protobuf:"bytes,6,opt,name=car_url,json=carUrl,proto3" json:"car_url,omitempty"`
-	Status        DriverStatus           `protobuf:"varint,7,opt,name=status,proto3,enum=driver.DriverStatus" json:"status,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	UserId           string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	CarMake          string                 `protobuf:"bytes,2,opt,name=car_make,json=carMake,proto3" json:"car_make,omitempty"`
+	CarModel         string                 `protobuf:"bytes,3,opt,name=car_model,json=carModel,proto3" json:"car_model,omitempty"`
+	CarColor         string                 `protobuf:"bytes,4,opt,name=car_color,json=carColor,proto3" json:"car_color,omitempty"`
+	LicensePlate     string                 `protobuf:"bytes,5,opt,name=license_plate,json=licensePlate,proto3" json:"license_plate,omitempty"`
+	CarUrl           string                 `protobuf:"bytes,6,opt,name=car_url,json=carUrl,proto3" json:"car_url,omitempty"`
+	Status           DriverStatus           `protobuf:"varint,7,opt,name=status,proto3,enum=driver.DriverStatus" json:"status,omitempty"`
+	Rating           float64                `protobuf:"fixed64,8,opt,name=rating,proto3" json:"rating,omitempty"`
+	TotalTrips       int32                  `protobuf:"varint,9,opt,name=total_trips,json=totalTrips,proto3" json:"total_trips,omitempty"`
+	TotalEarningsKzt int64                  `protobuf:"varint,10,opt,name=total_earnings_kzt,json=totalEarningsKzt,proto3" json:"total_earnings_kzt,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *DriverProfileResponse) Reset() {
@@ -242,6 +245,27 @@ func (x *DriverProfileResponse) GetStatus() DriverStatus {
 	return DriverStatus_STATUS_UNSPECIFIED
 }
 
+func (x *DriverProfileResponse) GetRating() float64 {
+	if x != nil {
+		return x.Rating
+	}
+	return 0
+}
+
+func (x *DriverProfileResponse) GetTotalTrips() int32 {
+	if x != nil {
+		return x.TotalTrips
+	}
+	return 0
+}
+
+func (x *DriverProfileResponse) GetTotalEarningsKzt() int64 {
+	if x != nil {
+		return x.TotalEarningsKzt
+	}
+	return 0
+}
+
 type GetUploadURLResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UploadUrl     string                 `protobuf:"bytes,1,opt,name=upload_url,json=uploadUrl,proto3" json:"upload_url,omitempty"`
@@ -298,12 +322,13 @@ var File_driver_proto protoreflect.FileDescriptor
 
 const file_driver_proto_rawDesc = "" +
 	"\n" +
-	"\fdriver.proto\x12\x06driver\x1a\x1bgoogle/protobuf/empty.proto\"\x90\x01\n" +
+	"\fdriver.proto\x12\x06driver\x1a\x1bgoogle/protobuf/empty.proto\"\xb4\x01\n" +
 	"\x14CreateProfileRequest\x12\x19\n" +
 	"\bcar_make\x18\x01 \x01(\tR\acarMake\x12\x1b\n" +
 	"\tcar_model\x18\x02 \x01(\tR\bcarModel\x12\x1b\n" +
 	"\tcar_color\x18\x03 \x01(\tR\bcarColor\x12#\n" +
-	"\rlicense_plate\x18\x04 \x01(\tR\flicensePlate\"\xf1\x01\n" +
+	"\rlicense_plate\x18\x04 \x01(\tR\flicensePlate\x12\x22\n" +
+	"\rcar_photo_url\x18\x05 \x01(\tR\vcarPhotoUrl\"\xd8\x02\n" +
 	"\x15DriverProfileResponse\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x19\n" +
 	"\bcar_make\x18\x02 \x01(\tR\acarMake\x12\x1b\n" +
@@ -311,7 +336,10 @@ const file_driver_proto_rawDesc = "" +
 	"\tcar_color\x18\x04 \x01(\tR\bcarColor\x12#\n" +
 	"\rlicense_plate\x18\x05 \x01(\tR\flicensePlate\x12\x17\n" +
 	"\acar_url\x18\x06 \x01(\tR\x06carUrl\x12,\n" +
-	"\x06status\x18\a \x01(\x0e2\x14.driver.DriverStatusR\x06status\"P\n" +
+	"\x06status\x18\a \x01(\x0e2\x14.driver.DriverStatusR\x06status\x12\x16\n" +
+	"\x06rating\x18\b \x01(\x01R\x06rating\x12\x1f\n" +
+	"\vtotal_trips\x18\t \x01(\x05R\ntotalTrips\x12,\n" +
+	"\x12total_earnings_kzt\x18\n \x01(\x03R\x10totalEarningsKzt\"P\n" +
 	"\x14GetUploadURLResponse\x12\x1d\n" +
 	"\n" +
 	"upload_url\x18\x01 \x01(\tR\tuploadUrl\x12\x19\n" +

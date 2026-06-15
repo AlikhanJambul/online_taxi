@@ -15,11 +15,40 @@ class DriverActiveTripScreen extends ConsumerStatefulWidget {
 
 class _DriverActiveTripScreenState extends ConsumerState<DriverActiveTripScreen> {
   YandexMapController? _mapCtrl;
+  List<Point>? _route;
+  DriverStatus? _routeForStatus;
+
+  Future<void> _calculateRoute({
+    required Point from,
+    required Point to,
+    required DriverStatus forStatus,
+  }) async {
+    try {
+      final resultWithSession = await YandexDriving.requestRoutes(
+        points: [
+          RequestPoint(point: from, requestPointType: RequestPointType.wayPoint),
+          RequestPoint(point: to,   requestPointType: RequestPointType.wayPoint),
+        ],
+        drivingOptions: const DrivingOptions(routesCount: 1),
+      );
+      final result = await resultWithSession.result;
+      if (!mounted) return;
+      if (result.routes != null && result.routes!.isNotEmpty) {
+        setState(() {
+          _route = result.routes!.first.geometry;
+          _routeForStatus = forStatus;
+        });
+      }
+    } catch (e) {
+      debugPrint('[Route] ошибка расчёта маршрута: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final state   = ref.watch(driverProvider);
     final markers = ref.watch(mapMarkersProvider).valueOrNull;
+    final trip    = state.activeTrip;
 
     // Центрируем карту когда приходят координаты
     ref.listen(driverProvider, (prev, next) {
@@ -33,6 +62,30 @@ class _DriverActiveTripScreenState extends ConsumerState<DriverActiveTripScreen>
           animation: const MapAnimation(type: MapAnimationType.smooth, duration: 0.5),
         );
       }
+
+      // Маршрут до пассажира — пока едем к месту посадки
+      if (next.status == DriverStatus.enRoute &&
+          next.lat != null && next.activeTrip != null &&
+          _routeForStatus != DriverStatus.enRoute) {
+        _calculateRoute(
+          from: Point(latitude: next.lat!, longitude: next.lng!),
+          to:   Point(latitude: next.activeTrip!.pickupLat, longitude: next.activeTrip!.pickupLng),
+          forStatus: DriverStatus.enRoute,
+        );
+      }
+
+      // Маршрут до точки назначения — после начала поездки
+      if (next.status == DriverStatus.inTrip &&
+          prev?.status != DriverStatus.inTrip &&
+          next.lat != null && next.activeTrip != null) {
+        setState(() => _route = null);
+        _calculateRoute(
+          from: Point(latitude: next.lat!, longitude: next.lng!),
+          to:   Point(latitude: next.activeTrip!.destLat, longitude: next.activeTrip!.destLng),
+          forStatus: DriverStatus.inTrip,
+        );
+      }
+
       // Когда поездка завершена — возвращаемся на главный экран
       if (next.status == DriverStatus.online && prev?.status == DriverStatus.inTrip) {
         context.pop();
@@ -53,24 +106,17 @@ class _DriverActiveTripScreenState extends ConsumerState<DriverActiveTripScreen>
                 )));
               }
             },
-            mapObjects: state.lat != null && markers != null
-                ? [
-                    PlacemarkMapObject(
-                      mapId: const MapObjectId('driver'),
-                      point: Point(latitude: state.lat!, longitude: state.lng!),
-                      icon: PlacemarkIcon.single(PlacemarkIconStyle(
-                        image: BitmapDescriptor.fromBytes(markers.car),
-                      )),
-                    ),
-                  ]
-                : [],
+            mapObjects: _buildMapObjects(state, markers, trip),
           ),
 
           // ── Статусный чип сверху ───────────────────────────────────────────
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Center(child: _StatusChip(status: state.status)),
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: _StatusChip(status: state.status),
+              ),
             ),
           ),
 
@@ -96,15 +142,15 @@ class _DriverActiveTripScreenState extends ConsumerState<DriverActiveTripScreen>
                   const SizedBox(height: 20),
 
                   // Инфо о маршруте
-                  if (state.incomingTrip != null) ...[
-                    _RouteCard(trip: state.incomingTrip!),
+                  if (trip != null) ...[
+                    _RouteCard(trip: trip),
                     const SizedBox(height: 14),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Оплата',
                             style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
-                        Text('${state.incomingTrip!.priceKzt} ₸',
+                        Text('${trip.priceKzt} ₸',
                             style: const TextStyle(
                                 color: AppTheme.primary,
                                 fontSize: 20,
@@ -136,6 +182,57 @@ class _DriverActiveTripScreenState extends ConsumerState<DriverActiveTripScreen>
         ],
       ),
     );
+  }
+
+  List<MapObject> _buildMapObjects(DriverState state, MapMarkers? markers, IncomingTrip? trip) {
+    final objects = <MapObject>[];
+    if (markers == null) return objects;
+
+    if (_route != null &&
+        ((_routeForStatus == DriverStatus.enRoute && state.status == DriverStatus.enRoute) ||
+         (_routeForStatus == DriverStatus.inTrip  && state.status == DriverStatus.inTrip))) {
+      objects.add(PolylineMapObject(
+        mapId: const MapObjectId('route'),
+        polyline: Polyline(points: _route!),
+        strokeColor: const Color(0xFF1976D2),
+        strokeWidth: 4.0,
+        outlineColor: Colors.white,
+        outlineWidth: 1.5,
+      ));
+    }
+
+    if (trip != null && state.status == DriverStatus.enRoute) {
+      objects.add(PlacemarkMapObject(
+        mapId: const MapObjectId('pickup'),
+        point: Point(latitude: trip.pickupLat, longitude: trip.pickupLng),
+        icon: PlacemarkIcon.single(PlacemarkIconStyle(
+          image: BitmapDescriptor.fromBytes(markers.pickup),
+        )),
+      ));
+    }
+
+    if (trip != null &&
+        (state.status == DriverStatus.arrived || state.status == DriverStatus.inTrip)) {
+      objects.add(PlacemarkMapObject(
+        mapId: const MapObjectId('dest'),
+        point: Point(latitude: trip.destLat, longitude: trip.destLng),
+        icon: PlacemarkIcon.single(PlacemarkIconStyle(
+          image: BitmapDescriptor.fromBytes(markers.destination),
+        )),
+      ));
+    }
+
+    if (state.lat != null && state.lng != null) {
+      objects.add(PlacemarkMapObject(
+        mapId: const MapObjectId('driver'),
+        point: Point(latitude: state.lat!, longitude: state.lng!),
+        icon: PlacemarkIcon.single(PlacemarkIconStyle(
+          image: BitmapDescriptor.fromBytes(markers.car),
+        )),
+      ));
+    }
+
+    return objects;
   }
 }
 

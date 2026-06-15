@@ -61,7 +61,7 @@ func ensureBucket(client *minio.Client, bucketName string) error {
 			return fmt.Errorf("ошибка установки политики для %s: %w", bucketName, err)
 		}
 
-		log.Printf("🔥 Бакет '%s' создан и открыт для чтения!", bucketName)
+		log.Printf("Бакет '%s' создан и открыт для чтения!", bucketName)
 	}
 
 	return nil

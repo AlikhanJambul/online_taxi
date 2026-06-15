@@ -155,6 +155,7 @@ services:
     restart: on-failure
     ports:
       - "50052:50052"
+      - "8082:8082"
     env_file:
       - .env
     environment:

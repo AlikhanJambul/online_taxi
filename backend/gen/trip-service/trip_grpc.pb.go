@@ -206,6 +206,10 @@ type TripServiceServer interface {
 	CompleteTrip(context.Context, *TripIDRequest) (*TripResponse, error)
 	// 10. Отмена поездки (и пассажир и водитель могут отменить)
 	CancelTrip(context.Context, *TripIDRequest) (*TripResponse, error)
+	// 11. Пассажир оставляет отзыв (score в поле TripIDRequest.Score)
+	SubmitReview(context.Context, *TripIDRequest) (*emptypb.Empty, error)
+	// 12. История поездок пассажира
+	GetTripHistory(context.Context, *emptypb.Empty) (*TripHistoryResponse, error)
 	mustEmbedUnimplementedTripServiceServer()
 }
 
@@ -245,6 +249,12 @@ func (UnimplementedTripServiceServer) CompleteTrip(context.Context, *TripIDReque
 }
 func (UnimplementedTripServiceServer) CancelTrip(context.Context, *TripIDRequest) (*TripResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CancelTrip not implemented")
+}
+func (UnimplementedTripServiceServer) SubmitReview(context.Context, *TripIDRequest) (*emptypb.Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method SubmitReview not implemented")
+}
+func (UnimplementedTripServiceServer) GetTripHistory(context.Context, *emptypb.Empty) (*TripHistoryResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetTripHistory not implemented")
 }
 func (UnimplementedTripServiceServer) mustEmbedUnimplementedTripServiceServer() {}
 func (UnimplementedTripServiceServer) testEmbeddedByValue()                     {}
@@ -429,6 +439,46 @@ func _TripService_CancelTrip_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+const TripService_SubmitReview_FullMethodName = "/trip.TripService/SubmitReview"
+
+func _TripService_SubmitReview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TripIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TripServiceServer).SubmitReview(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TripService_SubmitReview_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TripServiceServer).SubmitReview(ctx, req.(*TripIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+const TripService_GetTripHistory_FullMethodName = "/trip.TripService/GetTripHistory"
+
+func _TripService_GetTripHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TripServiceServer).GetTripHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TripService_GetTripHistory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TripServiceServer).GetTripHistory(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TripService_ServiceDesc is the grpc.ServiceDesc for TripService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -467,6 +517,14 @@ var TripService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CancelTrip",
 			Handler:    _TripService_CancelTrip_Handler,
+		},
+		{
+			MethodName: "SubmitReview",
+			Handler:    _TripService_SubmitReview_Handler,
+		},
+		{
+			MethodName: "GetTripHistory",
+			Handler:    _TripService_GetTripHistory_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

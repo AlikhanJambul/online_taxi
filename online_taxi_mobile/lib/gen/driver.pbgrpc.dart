@@ -54,6 +54,27 @@ class DriverServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getCarUploadURL, request, options: options);
   }
 
+  $grpc.ResponseFuture<$0.DriverProfileResponse> getStats(
+    $1.Empty request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getStats, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.TripHistoryResponse> getTripHistory(
+    $1.Empty request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getTripHistory, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$1.Empty> goOnline(
+    $1.Empty request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$goOnline, request, options: options);
+  }
+
   // method descriptors
 
   static final _$createProfile =
@@ -71,6 +92,20 @@ class DriverServiceClient extends $grpc.Client {
           '/driver.DriverService/GetCarUploadURL',
           ($1.Empty value) => value.writeToBuffer(),
           $0.GetUploadURLResponse.fromBuffer);
+  static final _$getStats =
+      $grpc.ClientMethod<$1.Empty, $0.DriverProfileResponse>(
+          '/driver.DriverService/GetStats',
+          ($1.Empty value) => value.writeToBuffer(),
+          $0.DriverProfileResponse.fromBuffer);
+  static final _$getTripHistory =
+      $grpc.ClientMethod<$1.Empty, $0.TripHistoryResponse>(
+          '/driver.DriverService/GetTripHistory',
+          ($1.Empty value) => value.writeToBuffer(),
+          $0.TripHistoryResponse.fromBuffer);
+  static final _$goOnline = $grpc.ClientMethod<$1.Empty, $1.Empty>(
+      '/driver.DriverService/GoOnline',
+      ($1.Empty value) => value.writeToBuffer(),
+      $1.Empty.fromBuffer);
 }
 
 @$pb.GrpcServiceName('driver.DriverService')

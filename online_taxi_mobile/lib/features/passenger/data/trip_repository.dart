@@ -1,5 +1,6 @@
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:protobuf/well_known_types/google/protobuf/empty.pb.dart';
 import '../../../core/grpc/grpc_client.dart';
 import '../../../gen/trip.pb.dart' as pb;
 import '../../../gen/trip.pbgrpc.dart';
@@ -21,6 +22,11 @@ class Trip {
   final String     destAddress;
   final double     pickupLat, pickupLng, destLat, destLng;
   final int        priceKzt;
+  final String     carMake;
+  final String     carModel;
+  final String     carColor;
+  final String     licensePlate;
+  final String     driverAvatarUrl;
 
   const Trip({
     required this.id,
@@ -34,16 +40,51 @@ class Trip {
     required this.destLat,
     required this.destLng,
     required this.priceKzt,
+    this.carMake         = '',
+    this.carModel        = '',
+    this.carColor        = '',
+    this.licensePlate    = '',
+    this.driverAvatarUrl = '',
   });
 
-  Trip copyWith({TripStatus? status}) => Trip(
+  Trip copyWith({
+    TripStatus? status,
+    String? carMake,
+    String? carModel,
+    String? carColor,
+    String? licensePlate,
+    String? driverAvatarUrl,
+  }) => Trip(
     id: id, passengerId: passengerId, driverId: driverId,
-    status: status ?? this.status,
+    status:       status       ?? this.status,
     pickupAddress: pickupAddress, destAddress: destAddress,
     pickupLat: pickupLat, pickupLng: pickupLng,
     destLat: destLat, destLng: destLng,
     priceKzt: priceKzt,
+    carMake:         carMake         ?? this.carMake,
+    carModel:        carModel        ?? this.carModel,
+    carColor:        carColor        ?? this.carColor,
+    licensePlate:    licensePlate    ?? this.licensePlate,
+    driverAvatarUrl: driverAvatarUrl ?? this.driverAvatarUrl,
   );
+}
+
+class TripHistoryItem {
+  final String id;
+  final String pickupAddress;
+  final String destAddress;
+  final int    priceKzt;
+  final String finishedAt;
+  final String driverName;
+
+  const TripHistoryItem({
+    required this.id,
+    required this.pickupAddress,
+    required this.destAddress,
+    required this.priceKzt,
+    required this.finishedAt,
+    required this.driverName,
+  });
 }
 
 class TripRepository {
@@ -83,9 +124,41 @@ class TripRepository {
     await _client.cancelTrip(pb.TripIDRequest(tripId: tripId));
   }
 
+  Future<void> submitReview({required String tripId, required int score}) async {
+    await _client.submitReview(pb.TripIDRequest(tripId: tripId, score: score));
+  }
+
+  /// Загружает поездку; данные машины приходят в gRPC-заголовках ответа.
   Future<Trip> getTrip(String tripId) async {
-    final res = await _client.getTrip(pb.GetTripRequest(tripId: tripId));
-    return _mapTrip(res);
+    final call = _client.getTrip(pb.GetTripRequest(tripId: tripId));
+    final res  = await call;
+
+    var carMake = '', carModel = '', carColor = '', licensePlate = '', driverAvatarUrl = '';
+    try {
+      final headers = await call.headers;
+      carMake         = headers['car-make']      ?? '';
+      carModel        = headers['car-model']     ?? '';
+      carColor        = headers['car-color']     ?? '';
+      licensePlate    = headers['license-plate'] ?? '';
+      driverAvatarUrl = headers['driver-avatar']  ?? '';
+    } catch (_) {}
+
+    return _mapTrip(res,
+        carMake: carMake, carModel: carModel,
+        carColor: carColor, licensePlate: licensePlate,
+        driverAvatarUrl: driverAvatarUrl);
+  }
+
+  Future<List<TripHistoryItem>> getTripHistory() async {
+    final res = await _client.getTripHistory(Empty());
+    return res.items.map((item) => TripHistoryItem(
+      id:            item.id,
+      pickupAddress: item.pickupAddress,
+      destAddress:   item.destAddress,
+      priceKzt:      item.priceKzt.toInt(),
+      finishedAt:    item.finishedAt,
+      driverName:    item.driverName,
+    )).toList();
   }
 
   // Server-streaming: сервер шлёт координаты водителя пока поездка активна
@@ -95,7 +168,14 @@ class TripRepository {
         .map((r) => (lat: r.lat, lng: r.lng));
   }
 
-  Trip _mapTrip(pb.TripResponse r) => Trip(
+  Trip _mapTrip(
+    pb.TripResponse r, {
+    String carMake         = '',
+    String carModel        = '',
+    String carColor        = '',
+    String licensePlate    = '',
+    String driverAvatarUrl = '',
+  }) => Trip(
     id:            r.tripId,
     passengerId:   r.passengerId,
     driverId:      r.driverId.isEmpty ? null : r.driverId,
@@ -105,6 +185,11 @@ class TripRepository {
     pickupLat:     r.pickupLat, pickupLng: r.pickupLng,
     destLat:       r.destLat,   destLng:   r.destLng,
     priceKzt:      r.priceKzt.toInt(),
+    carMake:         carMake,
+    carModel:        carModel,
+    carColor:        carColor,
+    licensePlate:    licensePlate,
+    driverAvatarUrl: driverAvatarUrl,
   );
 
   TripStatus _mapStatus(pb.TripStatus s) {

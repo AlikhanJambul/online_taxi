@@ -143,25 +143,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ]),
               const SizedBox(height: 20),
-
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppTheme.card,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.border),
-                ),
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Для теста:', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
-                    SizedBox(height: 4),
-                    Text('Пассажир: любой email', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
-                    Text('Водитель: email с "driver"', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
             ],
             ),
           ),

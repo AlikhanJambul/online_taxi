@@ -787,9 +787,11 @@ class EstimateResponse extends $pb.GeneratedMessage {
 class TripIDRequest extends $pb.GeneratedMessage {
   factory TripIDRequest({
     $core.String? tripId,
+    $core.int? score,
   }) {
     final result = create();
     if (tripId != null) result.tripId = tripId;
+    if (score != null) result.score = score;
     return result;
   }
 
@@ -807,6 +809,7 @@ class TripIDRequest extends $pb.GeneratedMessage {
       package: const $pb.PackageName(_omitMessageNames ? '' : 'trip'),
       createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'tripId')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'score', $pb.PbFieldType.O3)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -836,6 +839,179 @@ class TripIDRequest extends $pb.GeneratedMessage {
   $core.bool hasTripId() => $_has(0);
   @$pb.TagNumber(1)
   void clearTripId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get score => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set score($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasScore() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearScore() => $_clearField(2);
+}
+
+class TripHistoryItemPb extends $pb.GeneratedMessage {
+  factory TripHistoryItemPb({
+    $core.String? id,
+    $core.String? pickupAddress,
+    $core.String? destAddress,
+    $fixnum.Int64? priceKzt,
+    $core.String? finishedAt,
+    $core.String? driverName,
+  }) {
+    final result = create();
+    if (id != null) result.id = id;
+    if (pickupAddress != null) result.pickupAddress = pickupAddress;
+    if (destAddress != null) result.destAddress = destAddress;
+    if (priceKzt != null) result.priceKzt = priceKzt;
+    if (finishedAt != null) result.finishedAt = finishedAt;
+    if (driverName != null) result.driverName = driverName;
+    return result;
+  }
+
+  TripHistoryItemPb._();
+
+  factory TripHistoryItemPb.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory TripHistoryItemPb.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'TripHistoryItem',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'trip'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'pickupAddress')
+    ..aOS(3, _omitFieldNames ? '' : 'destAddress')
+    ..aInt64(4, _omitFieldNames ? '' : 'priceKzt')
+    ..aOS(5, _omitFieldNames ? '' : 'finishedAt')
+    ..aOS(6, _omitFieldNames ? '' : 'driverName')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  TripHistoryItemPb clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  TripHistoryItemPb copyWith(void Function(TripHistoryItemPb) updates) =>
+      super.copyWith((message) => updates(message as TripHistoryItemPb))
+          as TripHistoryItemPb;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static TripHistoryItemPb create() => TripHistoryItemPb._();
+  @$core.override
+  TripHistoryItemPb createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static TripHistoryItemPb getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<TripHistoryItemPb>(create);
+  static TripHistoryItemPb? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get pickupAddress => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set pickupAddress($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasPickupAddress() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPickupAddress() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get destAddress => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set destAddress($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasDestAddress() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDestAddress() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get priceKzt => $_getI64(3);
+  @$pb.TagNumber(4)
+  set priceKzt($fixnum.Int64 value) => $_setInt64(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasPriceKzt() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPriceKzt() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get finishedAt => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set finishedAt($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasFinishedAt() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearFinishedAt() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get driverName => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set driverName($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasDriverName() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearDriverName() => $_clearField(6);
+}
+
+class TripHistoryResponse extends $pb.GeneratedMessage {
+  factory TripHistoryResponse({
+    $core.Iterable<TripHistoryItemPb>? items,
+  }) {
+    final result = create();
+    if (items != null) result.items.addAll(items);
+    return result;
+  }
+
+  TripHistoryResponse._();
+
+  factory TripHistoryResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory TripHistoryResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'TripHistoryResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'trip'),
+      createEmptyInstance: create)
+    ..pc<TripHistoryItemPb>(
+        1, _omitFieldNames ? '' : 'items', $pb.PbFieldType.PM,
+        subBuilder: TripHistoryItemPb.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  TripHistoryResponse clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  TripHistoryResponse copyWith(void Function(TripHistoryResponse) updates) =>
+      super.copyWith((message) => updates(message as TripHistoryResponse))
+          as TripHistoryResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static TripHistoryResponse create() => TripHistoryResponse._();
+  @$core.override
+  TripHistoryResponse createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static TripHistoryResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<TripHistoryResponse>(create);
+  static TripHistoryResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<TripHistoryItemPb> get items => $_getList(0);
 }
 
 const $core.bool _omitFieldNames =

@@ -4,6 +4,15 @@ import (
 	"context"
 )
 
+type TripHistoryItem struct {
+	ID            string `json:"id"`
+	PickupAddress string `json:"pickup_address"`
+	DestAddress   string `json:"dest_address"`
+	PriceKZT      int64  `json:"price_kzt"`
+	FinishedAt    string `json:"finished_at"`
+	DriverName    string `json:"driver_name"`
+}
+
 type Repository interface {
 	CreateTrip(ctx context.Context, trip *Trip) error
 	AcceptTrip(ctx context.Context, tripID string, driverID string) (*Trip, error)
@@ -16,4 +25,6 @@ type Repository interface {
 	CancelTrip(ctx context.Context, tripID, userID string) (*Trip, error)
 
 	DeleteFCMTokens(ctx context.Context, tokens []string) error
+	SaveReview(ctx context.Context, tripID, reviewerID, targetID string, score int) error
+	GetTripHistory(ctx context.Context, passengerID string) ([]TripHistoryItem, error)
 }

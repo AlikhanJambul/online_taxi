@@ -13,6 +13,9 @@ type Service interface {
 	CreateDriver(ctx context.Context, dto CreateRequestDTO) (*domain.Driver, error)
 	GetDriver(ctx context.Context) (*domain.Driver, error)
 	GetCarUploadURL(ctx context.Context, expire time.Duration) (string, string, error)
+	GetStats(ctx context.Context) (*domain.DriverStats, error)
+	GetTripHistory(ctx context.Context) ([]domain.TripHistoryItem, error)
+	GoOnline(ctx context.Context) error
 }
 
 type service struct {
@@ -61,6 +64,31 @@ func (s *service) GetDriver(ctx context.Context) (*domain.Driver, error) {
 	}
 
 	return s.repo.GetDriver(ctx, userID)
+}
+
+func (s *service) GetStats(ctx context.Context) (*domain.DriverStats, error) {
+	idAny := ctx.Value("userID")
+	userID, ok := idAny.(string)
+	if !ok || userID == "" {
+		return nil, domain.ErrEmptyCtx
+	}
+	return s.repo.GetStats(ctx, userID)
+}
+
+func (s *service) GetTripHistory(ctx context.Context) ([]domain.TripHistoryItem, error) {
+	userID, ok := ctx.Value("userID").(string)
+	if !ok || userID == "" {
+		return nil, domain.ErrEmptyCtx
+	}
+	return s.repo.GetTripHistory(ctx, userID)
+}
+
+func (s *service) GoOnline(ctx context.Context) error {
+	userID, ok := ctx.Value("userID").(string)
+	if !ok || userID == "" {
+		return domain.ErrEmptyCtx
+	}
+	return s.repo.StartShift(ctx, userID)
 }
 
 func (s *service) GetCarUploadURL(ctx context.Context, expiry time.Duration) (string, string, error) {

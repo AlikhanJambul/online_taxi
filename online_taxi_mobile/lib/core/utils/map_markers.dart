@@ -19,85 +19,127 @@ final mapMarkersProvider = FutureProvider<MapMarkers>((ref) async {
   return MapMarkers(pickup: results[0], destination: results[1], car: results[2]);
 });
 
-// Зелёный кружок — точка подачи
-Future<Uint8List> _drawPickup() => _drawDot(
-  fill:   const Color(0xFF4CAF50),
-  border: Colors.white,
-);
+Future<Uint8List> _drawPickup() => _drawPin(const Color(0xFF1B5E20), Colors.white);
+Future<Uint8List> _drawDestination() => _drawPin(const Color(0xFF0D47A1), Colors.white);
 
-// Жёлтый кружок — точка назначения
-Future<Uint8List> _drawDestination() => _drawDot(
-  fill:   const Color(0xFFFFCC00),
-  border: const Color(0xFF111111),
-);
-
-// Белый кружок с жёлтой точкой — машина
+// Круглая иконка такси — жёлтый круг с чёрной машиной
 Future<Uint8List> _drawCar() async {
-  const size = 60.0;
-  const half = size / 2;
+  const size = 72.0;
+  const cx   = size / 2;
+  const r    = 30.0;
 
   final recorder = ui.PictureRecorder();
   final canvas   = Canvas(recorder, Rect.fromLTWH(0, 0, size, size));
 
-  // Тень
+  // Чёрный обод
   canvas.drawCircle(
-    const Offset(half, half + 3),
-    half - 6,
-    Paint()
-      ..color     = Colors.black.withOpacity(0.35)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
+    const Offset(cx, cx),
+    r + 3,
+    Paint()..color = Colors.black,
   );
 
-  // Белый фон
-  canvas.drawCircle(const Offset(half, half), half - 6, Paint()..color = Colors.white);
-
-  // Жёлтое кольцо
+  // Жёлтая заливка
   canvas.drawCircle(
-    const Offset(half, half), half - 6,
-    Paint()
-      ..color       = const Color(0xFFFFCC00)
-      ..style       = PaintingStyle.stroke
-      ..strokeWidth = 3.5,
+    const Offset(cx, cx),
+    r,
+    Paint()..color = const Color(0xFFFFD600),
   );
 
-  // Маленькая жёлтая точка в центре (иконка такси)
-  canvas.drawCircle(const Offset(half, half), 5, Paint()..color = const Color(0xFFFFCC00));
+  // Кузов машины
+  final body = Paint()..color = Colors.black;
+
+  // Нижняя часть кузова
+  canvas.drawRRect(
+    RRect.fromRectAndRadius(
+      Rect.fromCenter(center: const Offset(cx, cx + 6), width: 34, height: 13),
+      const Radius.circular(4),
+    ),
+    body,
+  );
+
+  // Крыша
+  canvas.drawRRect(
+    RRect.fromRectAndRadius(
+      Rect.fromCenter(center: const Offset(cx, cx - 3), width: 22, height: 11),
+      const Radius.circular(3),
+    ),
+    body,
+  );
+
+  // Окна (жёлтые прямоугольники в крыше)
+  final window = Paint()..color = const Color(0xFFFFD600);
+  canvas.drawRRect(
+    RRect.fromRectAndRadius(
+      Rect.fromLTWH(cx - 9, cx - 8, 8, 6),
+      const Radius.circular(1),
+    ),
+    window,
+  );
+  canvas.drawRRect(
+    RRect.fromRectAndRadius(
+      Rect.fromLTWH(cx + 1, cx - 8, 8, 6),
+      const Radius.circular(1),
+    ),
+    window,
+  );
+
+  // Колёса
+  final wheel = Paint()..color = Colors.black;
+  canvas.drawCircle(Offset(cx - 11, cx + 13), 5, wheel);
+  canvas.drawCircle(Offset(cx + 11, cx + 13), 5, wheel);
+  // Желтые центры колёс
+  final hub = Paint()..color = const Color(0xFFFFD600);
+  canvas.drawCircle(Offset(cx - 11, cx + 13), 2.5, hub);
+  canvas.drawCircle(Offset(cx + 11, cx + 13), 2.5, hub);
 
   final img   = await recorder.endRecording().toImage(size.toInt(), size.toInt());
   final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
   return bytes!.buffer.asUint8List();
 }
 
-Future<Uint8List> _drawDot({required Color fill, required Color border}) async {
-  const size = 52.0;
-  const half = size / 2;
+// Булавка с чётким контуром без прозрачностей
+Future<Uint8List> _drawPin(Color fill, Color dot) async {
+  const size  = 56.0;
+  const cx    = size / 2;
+  const r     = 20.0;
+  const tipY  = size - 4.0;
 
   final recorder = ui.PictureRecorder();
   final canvas   = Canvas(recorder, Rect.fromLTWH(0, 0, size, size));
 
-  // Тень
-  canvas.drawCircle(
-    const Offset(half, half + 3),
-    half - 6,
-    Paint()
-      ..color      = Colors.black.withOpacity(0.3)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
-  );
+  // Чёрный контур треугольника (хвост)
+  final tailBorder = Path()
+    ..moveTo(cx - 10, r + 2)
+    ..lineTo(cx + 10, r + 2)
+    ..lineTo(cx, tipY + 2)
+    ..close();
+  canvas.drawPath(tailBorder, Paint()..color = Colors.black);
 
-  // Заливка
-  canvas.drawCircle(const Offset(half, half), half - 6, Paint()..color = fill);
+  // Чёрный контур круга
+  canvas.drawCircle(const Offset(cx, r), r + 2, Paint()..color = Colors.black);
 
-  // Граница
-  canvas.drawCircle(
-    const Offset(half, half), half - 6,
-    Paint()
-      ..color       = border
-      ..style       = PaintingStyle.stroke
-      ..strokeWidth = 2.5,
-  );
+  // Цветной хвост
+  final tail = Path()
+    ..moveTo(cx - 9, r + 2)
+    ..lineTo(cx + 9, r + 2)
+    ..lineTo(cx, tipY)
+    ..close();
+  canvas.drawPath(tail, Paint()..color = fill);
+
+  // Цветной круг
+  canvas.drawCircle(const Offset(cx, r), r, Paint()..color = fill);
 
   // Белая точка в центре
-  canvas.drawCircle(const Offset(half, half), 5, Paint()..color = Colors.white);
+  canvas.drawCircle(const Offset(cx, r), 8, Paint()..color = dot);
+  // Чёрное кольцо вокруг точки
+  canvas.drawCircle(
+    const Offset(cx, r),
+    8,
+    Paint()
+      ..color       = Colors.black
+      ..style       = PaintingStyle.stroke
+      ..strokeWidth = 1.5,
+  );
 
   final img   = await recorder.endRecording().toImage(size.toInt(), size.toInt());
   final bytes = await img.toByteData(format: ui.ImageByteFormat.png);

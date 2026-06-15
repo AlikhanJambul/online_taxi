@@ -14,6 +14,7 @@ CREATE TABLE users (
                        avatar_url VARCHAR(255),
                        rating DECIMAL(3,2) DEFAULT 5.00,
                        is_blocked BOOLEAN DEFAULT false,
+                       shift_started_at TIMESTAMP WITH TIME ZONE,
                        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -66,8 +67,12 @@ CREATE TABLE reviews (
                          target_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
                          score INTEGER NOT NULL CHECK (score >= 1 AND score <= 5),
                          comment TEXT,
-                         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                         UNIQUE (trip_id, reviewer_id)
 );
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS shift_started_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE reviews ADD CONSTRAINT reviews_trip_reviewer_unique UNIQUE (trip_id, reviewer_id);
 
 -- Создаем индексы для быстрого поиска
 CREATE INDEX idx_sessions_refresh_token ON sessions(refresh_token);

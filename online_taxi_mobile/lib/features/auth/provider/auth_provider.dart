@@ -141,6 +141,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   void setAvatarUrl(String url) {
     state = state.copyWith(avatarUrl: url);
+    _repo.saveAvatarUrl(url);
   }
 
   void setDriverSetupStatus(DriverSetupStatus status) {

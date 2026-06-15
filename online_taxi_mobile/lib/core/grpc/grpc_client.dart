@@ -2,7 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grpc/grpc.dart';
 import '../services/storage_service.dart';
 
-const _host = '192.168.0.119'; // Android эмулятор → 10.0.2.2, реальное устройство → IP машины (ipconfig)
+const kServerHost = '192.168.0.119'; // Android эмулятор → 10.0.2.2, реальное устройство → IP машины (ipconfig)
+const _host = kServerHost;
 
 class AuthInterceptor extends ClientInterceptor {
   final StorageService _storage;

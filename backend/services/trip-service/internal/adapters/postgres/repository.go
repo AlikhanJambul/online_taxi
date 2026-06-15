@@ -86,12 +86,17 @@ func (r *repository) AcceptTrip(ctx context.Context, tripID string, driverID str
 
 func (r *repository) GetTrip(ctx context.Context, tripID string) (*domain.Trip, error) {
 	query := `
-		SELECT 
-			id, passenger_id, driver_id, status, 
-			pickup_address, dest_address, pickup_lat, pickup_lng, 
-			dest_lat, dest_lng, price_kzt, created_at, accepted_at, finished_at
-		FROM trips 
-		WHERE id = $1
+		SELECT
+			t.id, t.passenger_id, t.driver_id, t.status,
+			t.pickup_address, t.dest_address, t.pickup_lat, t.pickup_lng,
+			t.dest_lat, t.dest_lng, t.price_kzt, t.created_at, t.accepted_at, t.finished_at,
+			COALESCE(dp.car_make, ''), COALESCE(dp.car_model, ''),
+			COALESCE(dp.car_color, ''), COALESCE(dp.license_plate, ''),
+			COALESCE(u.avatar_url, '')
+		FROM trips t
+		LEFT JOIN driver_profiles dp ON dp.user_id = t.driver_id
+		LEFT JOIN users u ON u.id = t.driver_id
+		WHERE t.id = $1
 	`
 
 	trip := &domain.Trip{}
@@ -101,6 +106,8 @@ func (r *repository) GetTrip(ctx context.Context, tripID string) (*domain.Trip, 
 		&trip.PickupAddress, &trip.DestAddress, &trip.PickupLat, &trip.PickupLng,
 		&trip.DestLat, &trip.DestLng, &trip.PriceKZT,
 		&trip.CreatedAt, &trip.AcceptedAt, &trip.FinishedAt,
+		&trip.CarMake, &trip.CarModel, &trip.CarColor, &trip.LicensePlate,
+		&trip.DriverAvatarURL,
 	)
 
 	if err != nil {
@@ -169,6 +176,64 @@ func (r *repository) CancelTrip(ctx context.Context, tripID, userID string) (*do
 		domain.StatusCancelled, tripID, userID,
 	)
 	return scanTrip(row)
+}
+
+func (r *repository) SaveReview(ctx context.Context, tripID, reviewerID, targetID string, score int) error {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	_, err = tx.Exec(ctx,
+		`INSERT INTO reviews (trip_id, reviewer_id, target_id, score) VALUES ($1, $2, $3, $4)`,
+		tripID, reviewerID, targetID, score,
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx,
+		`UPDATE users SET rating = (
+			SELECT ROUND(AVG(score)::NUMERIC, 2) FROM reviews WHERE target_id = $1
+		) WHERE id = $1`,
+		targetID,
+	)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit(ctx)
+}
+
+func (r *repository) GetTripHistory(ctx context.Context, passengerID string) ([]domain.TripHistoryItem, error) {
+	rows, err := r.db.Query(ctx, `
+		SELECT t.id, t.pickup_address, t.dest_address, t.price_kzt,
+		       COALESCE(TO_CHAR(t.finished_at AT TIME ZONE 'UTC', 'DD.MM.YYYY'), ''),
+		       COALESCE(u.full_name, '')
+		FROM trips t
+		LEFT JOIN users u ON u.id = t.driver_id
+		WHERE t.passenger_id = $1 AND t.status = 'COMPLETED'
+		ORDER BY t.finished_at DESC NULLS LAST
+		LIMIT 20
+	`, passengerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var items []domain.TripHistoryItem
+	for rows.Next() {
+		var item domain.TripHistoryItem
+		if err := rows.Scan(&item.ID, &item.PickupAddress, &item.DestAddress, &item.PriceKZT, &item.FinishedAt, &item.DriverName); err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	if items == nil {
+		items = []domain.TripHistoryItem{}
+	}
+	return items, nil
 }
 
 func (r *repository) DeleteFCMTokens(ctx context.Context, tokens []string) error {

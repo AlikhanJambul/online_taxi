@@ -28,6 +28,8 @@ type Service interface {
 	UnsubscribeFromTrip(tripID string)
 
 	FindAndNotifyDrivers(ctx context.Context, trip *domain.Trip) error
+	SubmitReview(ctx context.Context, tripID, passengerID string, score int) error
+	GetTripHistory(ctx context.Context, passengerID string) ([]domain.TripHistoryItem, error)
 }
 
 type service struct {
@@ -199,6 +201,8 @@ func (s *service) FindAndNotifyDrivers(ctx context.Context, trip *domain.Trip) e
 		"dest_address":   trip.DestAddress,
 		"pickup_lat":     strconv.FormatFloat(trip.PickupLat, 'f', 6, 64),
 		"pickup_lng":     strconv.FormatFloat(trip.PickupLng, 'f', 6, 64),
+		"dest_lat":       strconv.FormatFloat(trip.DestLat, 'f', 6, 64),
+		"dest_lng":       strconv.FormatFloat(trip.DestLng, 'f', 6, 64),
 		"price_kzt":      strconv.FormatInt(trip.PriceKZT, 10),
 		"distance_km":    strconv.FormatFloat(estimate.DistanceKm, 'f', 2, 64),
 	}
@@ -301,6 +305,24 @@ func (s *service) NotifyTripStatusChange(ctx context.Context, trip *domain.Trip)
 	}
 
 	return nil
+}
+
+func (s *service) GetTripHistory(ctx context.Context, passengerID string) ([]domain.TripHistoryItem, error) {
+	return s.repo.GetTripHistory(ctx, passengerID)
+}
+
+func (s *service) SubmitReview(ctx context.Context, tripID, passengerID string, score int) error {
+	trip, err := s.repo.GetTrip(ctx, tripID)
+	if err != nil {
+		return fmt.Errorf("поездка не найдена: %w", err)
+	}
+	if trip.Status != domain.StatusCompleted {
+		return fmt.Errorf("можно оставить отзыв только для завершённой поездки")
+	}
+	if trip.DriverID == nil {
+		return fmt.Errorf("у поездки нет водителя")
+	}
+	return s.repo.SaveReview(ctx, tripID, passengerID, *trip.DriverID, score)
 }
 
 func (s *service) EstimatePrice(dto EstimatePriceReqDTO) domain.PriceEstimate {

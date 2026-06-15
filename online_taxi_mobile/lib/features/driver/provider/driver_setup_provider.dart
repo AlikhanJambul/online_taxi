@@ -37,6 +37,7 @@ class DriverSetupNotifier extends StateNotifier<DriverSetupState> {
       state = state.copyWith(stage: SetupStage.uploadingAvatar);
       final avatarInfo = await _authRepo.getAvatarUploadUrl();
       await _uploadFile(avatarInfo.uploadUrl, avatarFile);
+      _ref.read(authProvider.notifier).setAvatarUrl(avatarInfo.fileUrl);
 
       state = state.copyWith(stage: SetupStage.uploadingCar);
       final carInfo = await _driverRepo.getCarUploadUrl();
@@ -56,7 +57,7 @@ class DriverSetupNotifier extends StateNotifier<DriverSetupState> {
     } catch (e) {
       state = DriverSetupState(
         stage: SetupStage.error,
-        error: 'Ошибка: ${e.toString().split(':').last.trim()}',
+        error: 'Ошибка: $e',
       );
     }
   }

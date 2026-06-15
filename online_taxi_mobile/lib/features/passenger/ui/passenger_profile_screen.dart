@@ -6,7 +6,12 @@ import 'dart:io';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/provider/auth_provider.dart';
 import '../../auth/data/auth_repository.dart';
+import '../data/trip_repository.dart';
 import '../provider/trip_provider.dart';
+
+final _tripHistoryProvider = FutureProvider.autoDispose(
+  (ref) => ref.watch(tripRepositoryProvider).getTripHistory(),
+);
 
 class PassengerProfileScreen extends ConsumerStatefulWidget {
   const PassengerProfileScreen({super.key});
@@ -58,12 +63,23 @@ class _PassengerProfileScreenState
 
   @override
   Widget build(BuildContext context) {
-    final auth = ref.watch(authProvider);
+    final auth    = ref.watch(authProvider);
+    final history = ref.watch(_tripHistoryProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.bg,
       body: SafeArea(
-        child: Column(
+        child: RefreshIndicator(
+          color: AppTheme.primary,
+          onRefresh: () async {
+            ref.invalidate(_tripHistoryProvider);
+            try {
+              await ref.read(_tripHistoryProvider.future);
+            } catch (_) {}
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
@@ -143,22 +159,36 @@ class _PassengerProfileScreenState
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: _ProfileMenuItem(
-                icon: Icons.history_rounded,
-                label: 'История поездок',
-                onTap: () {},
-              ),
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: _ProfileMenuItem(
                 icon: Icons.help_outline_rounded,
                 label: 'Поддержка',
                 onTap: () {},
               ),
             ),
 
-            const Spacer(),
+            const SizedBox(height: 24),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: const Text('История поездок', style: TextStyle(
+                color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+            ),
+            const SizedBox(height: 12),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: history.when(
+                loading: () => const Center(child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: CircularProgressIndicator(color: AppTheme.primary))),
+                error: (_, __) => _emptyHistory('Не удалось загрузить историю'),
+                data: (items) => items.isEmpty
+                    ? _emptyHistory('Завершённых поездок пока нет')
+                    : Column(
+                        children: items.map((item) => _TripHistoryTile(item: item)).toList()),
+              ),
+            ),
+
+            const SizedBox(height: 24),
 
             // Кнопка выхода
             Padding(
@@ -185,9 +215,19 @@ class _PassengerProfileScreenState
             ),
           ],
         ),
+          ),
+        ),
       ),
     );
   }
+
+  Widget _emptyHistory(String msg) => Container(
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: AppTheme.card, borderRadius: BorderRadius.circular(14),
+      border: Border.all(color: AppTheme.border)),
+    child: Center(child: Text(msg,
+        style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14))));
 }
 
 class _Avatar extends StatelessWidget {
@@ -261,4 +301,48 @@ class _ProfileMenuItem extends StatelessWidget {
       ]),
     ),
   );
+}
+
+class _TripHistoryTile extends StatelessWidget {
+  final TripHistoryItem item;
+  const _TripHistoryTile({required this.item});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: AppTheme.card, borderRadius: BorderRadius.circular(14),
+      border: Border.all(color: AppTheme.border)),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(children: [
+        const Icon(Icons.radio_button_checked, color: AppTheme.success, size: 14),
+        const SizedBox(width: 6),
+        Expanded(child: Text(item.pickupAddress, overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13))),
+      ]),
+      const SizedBox(height: 4),
+      Row(children: [
+        const Icon(Icons.location_on_rounded, color: AppTheme.primary, size: 14),
+        const SizedBox(width: 6),
+        Expanded(child: Text(item.destAddress, overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13))),
+      ]),
+      if (item.driverName.isNotEmpty) ...[
+        const SizedBox(height: 4),
+        Row(children: [
+          const Icon(Icons.person_rounded, color: AppTheme.textSecondary, size: 14),
+          const SizedBox(width: 6),
+          Expanded(child: Text('Водитель: ${item.driverName}', overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12))),
+        ]),
+      ],
+      const SizedBox(height: 8),
+      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        Text(item.finishedAt, style: const TextStyle(
+            color: AppTheme.textSecondary, fontSize: 12)),
+        Text('${item.priceKzt} ₸', style: const TextStyle(
+            color: AppTheme.primary, fontWeight: FontWeight.w700, fontSize: 14)),
+      ]),
+    ]));
 }

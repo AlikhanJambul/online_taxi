@@ -29,6 +29,12 @@ type Trip struct {
 
 	PriceKZT int64
 
+	CarMake         string
+	CarModel        string
+	CarColor        string
+	LicensePlate    string
+	DriverAvatarURL string
+
 	CreatedAt  time.Time
 	AcceptedAt *time.Time
 	FinishedAt *time.Time

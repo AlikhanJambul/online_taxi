@@ -23,6 +23,9 @@ const (
 	DriverService_CreateProfile_FullMethodName   = "/driver.DriverService/CreateProfile"
 	DriverService_GetProfile_FullMethodName      = "/driver.DriverService/GetProfile"
 	DriverService_GetCarUploadURL_FullMethodName = "/driver.DriverService/GetCarUploadURL"
+	DriverService_GetStats_FullMethodName        = "/driver.DriverService/GetStats"
+	DriverService_GetTripHistory_FullMethodName  = "/driver.DriverService/GetTripHistory"
+	DriverService_GoOnline_FullMethodName        = "/driver.DriverService/GoOnline"
 )
 
 // DriverServiceClient is the client API for DriverService service.
@@ -32,6 +35,9 @@ type DriverServiceClient interface {
 	CreateProfile(ctx context.Context, in *CreateProfileRequest, opts ...grpc.CallOption) (*DriverProfileResponse, error)
 	GetProfile(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*DriverProfileResponse, error)
 	GetCarUploadURL(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetUploadURLResponse, error)
+	GetStats(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*DriverProfileResponse, error)
+	GetTripHistory(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*TripHistoryResponse, error)
+	GoOnline(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type driverServiceClient struct {
@@ -72,6 +78,36 @@ func (c *driverServiceClient) GetCarUploadURL(ctx context.Context, in *emptypb.E
 	return out, nil
 }
 
+func (c *driverServiceClient) GetStats(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*DriverProfileResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DriverProfileResponse)
+	err := c.cc.Invoke(ctx, DriverService_GetStats_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *driverServiceClient) GetTripHistory(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*TripHistoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TripHistoryResponse)
+	err := c.cc.Invoke(ctx, DriverService_GetTripHistory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *driverServiceClient) GoOnline(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, DriverService_GoOnline_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DriverServiceServer is the server API for DriverService service.
 // All implementations must embed UnimplementedDriverServiceServer
 // for forward compatibility.
@@ -79,6 +115,9 @@ type DriverServiceServer interface {
 	CreateProfile(context.Context, *CreateProfileRequest) (*DriverProfileResponse, error)
 	GetProfile(context.Context, *emptypb.Empty) (*DriverProfileResponse, error)
 	GetCarUploadURL(context.Context, *emptypb.Empty) (*GetUploadURLResponse, error)
+	GetStats(context.Context, *emptypb.Empty) (*DriverProfileResponse, error)
+	GetTripHistory(context.Context, *emptypb.Empty) (*TripHistoryResponse, error)
+	GoOnline(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 	mustEmbedUnimplementedDriverServiceServer()
 }
 
@@ -97,6 +136,15 @@ func (UnimplementedDriverServiceServer) GetProfile(context.Context, *emptypb.Emp
 }
 func (UnimplementedDriverServiceServer) GetCarUploadURL(context.Context, *emptypb.Empty) (*GetUploadURLResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetCarUploadURL not implemented")
+}
+func (UnimplementedDriverServiceServer) GetStats(context.Context, *emptypb.Empty) (*DriverProfileResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetStats not implemented")
+}
+func (UnimplementedDriverServiceServer) GetTripHistory(context.Context, *emptypb.Empty) (*TripHistoryResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetTripHistory not implemented")
+}
+func (UnimplementedDriverServiceServer) GoOnline(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method GoOnline not implemented")
 }
 func (UnimplementedDriverServiceServer) mustEmbedUnimplementedDriverServiceServer() {}
 func (UnimplementedDriverServiceServer) testEmbeddedByValue()                       {}
@@ -173,6 +221,60 @@ func _DriverService_GetCarUploadURL_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DriverService_GetStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DriverServiceServer).GetStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DriverService_GetStats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DriverServiceServer).GetStats(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DriverService_GetTripHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DriverServiceServer).GetTripHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DriverService_GetTripHistory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DriverServiceServer).GetTripHistory(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DriverService_GoOnline_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DriverServiceServer).GoOnline(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DriverService_GoOnline_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DriverServiceServer).GoOnline(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DriverService_ServiceDesc is the grpc.ServiceDesc for DriverService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -191,6 +293,18 @@ var DriverService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetCarUploadURL",
 			Handler:    _DriverService_GetCarUploadURL_Handler,
+		},
+		{
+			MethodName: "GetStats",
+			Handler:    _DriverService_GetStats_Handler,
+		},
+		{
+			MethodName: "GetTripHistory",
+			Handler:    _DriverService_GetTripHistory_Handler,
+		},
+		{
+			MethodName: "GoOnline",
+			Handler:    _DriverService_GoOnline_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

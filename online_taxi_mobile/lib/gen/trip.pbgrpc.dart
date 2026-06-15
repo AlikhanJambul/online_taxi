@@ -118,6 +118,22 @@ class TripServiceClient extends $grpc.Client {
     return $createUnaryCall(_$cancelTrip, request, options: options);
   }
 
+  /// 11. Пассажир оставляет отзыв (score в поле TripIDRequest)
+  $grpc.ResponseFuture<$1.Empty> submitReview(
+    $0.TripIDRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$submitReview, request, options: options);
+  }
+
+  /// 12. История поездок пассажира
+  $grpc.ResponseFuture<$0.TripHistoryResponse> getTripHistory(
+    $1.Empty request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getTripHistory, request, options: options);
+  }
+
   // method descriptors
 
   static final _$createTrip =
@@ -170,6 +186,16 @@ class TripServiceClient extends $grpc.Client {
           '/trip.TripService/CancelTrip',
           ($0.TripIDRequest value) => value.writeToBuffer(),
           $0.TripResponse.fromBuffer);
+  static final _$submitReview =
+      $grpc.ClientMethod<$0.TripIDRequest, $1.Empty>(
+          '/trip.TripService/SubmitReview',
+          ($0.TripIDRequest value) => value.writeToBuffer(),
+          $1.Empty.fromBuffer);
+  static final _$getTripHistory =
+      $grpc.ClientMethod<$1.Empty, $0.TripHistoryResponse>(
+          '/trip.TripService/GetTripHistory',
+          ($1.Empty value) => value.writeToBuffer(),
+          $0.TripHistoryResponse.fromBuffer);
 }
 
 @$pb.GrpcServiceName('trip.TripService')
