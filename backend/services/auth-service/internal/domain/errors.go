@@ -9,4 +9,6 @@ var (
 	ErrUserNotFound           = errors.New("пользователь не найден")
 	ErrInvalidData            = errors.New("неверные данные user_id, fcm_token, device_id")
 	ErrUnauth                 = errors.New("пользователь не авторизован")
+	ErrEmailTaken             = errors.New("этот email уже зарегистрирован")
+	ErrPhoneTaken             = errors.New("этот номер телефона уже зарегистрирован")
 )

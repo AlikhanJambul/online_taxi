@@ -192,9 +192,51 @@ const TripIDRequest$json = {
   '1': 'TripIDRequest',
   '2': [
     {'1': 'trip_id', '3': 1, '4': 1, '5': 9, '10': 'tripId'},
+    {'1': 'score', '3': 2, '4': 1, '5': 5, '10': 'score'},
   ],
 };
 
 /// Descriptor for `TripIDRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List tripIDRequestDescriptor = $convert
-    .base64Decode('Cg1UcmlwSURSZXF1ZXN0EhcKB3RyaXBfaWQYASABKAlSBnRyaXBJZA==');
+final $typed_data.Uint8List tripIDRequestDescriptor = $convert.base64Decode(
+    'Cg1UcmlwSURSZXF1ZXN0EhcKB3RyaXBfaWQYASABKAlSBnRyaXBJZBIUCgVzY29yZRgCIAEoBV'
+    'IFc2NvcmU=');
+
+@$core.Deprecated('Use tripHistoryItemPbDescriptor instead')
+const TripHistoryItemPb$json = {
+  '1': 'TripHistoryItemPb',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'pickup_address', '3': 2, '4': 1, '5': 9, '10': 'pickupAddress'},
+    {'1': 'dest_address', '3': 3, '4': 1, '5': 9, '10': 'destAddress'},
+    {'1': 'price_kzt', '3': 4, '4': 1, '5': 3, '10': 'priceKzt'},
+    {'1': 'finished_at', '3': 5, '4': 1, '5': 9, '10': 'finishedAt'},
+    {'1': 'driver_name', '3': 6, '4': 1, '5': 9, '10': 'driverName'},
+  ],
+};
+
+/// Descriptor for `TripHistoryItemPb`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List tripHistoryItemPbDescriptor = $convert.base64Decode(
+    'ChFUcmlwSGlzdG9yeUl0ZW1QYhIOCgJpZBgBIAEoCVICaWQSJQoOcGlja3VwX2FkZHJlc3MYAi'
+    'ABKAlSDXBpY2t1cEFkZHJlc3MSIQoMZGVzdF9hZGRyZXNzGAMgASgJUgtkZXN0QWRkcmVzcxIb'
+    'CglwcmljZV9renQYBCABKANSCHByaWNlS3p0Eh8KC2ZpbmlzaGVkX2F0GAUgASgJUgpmaW5pc2'
+    'hlZEF0Eh8KC2RyaXZlcl9uYW1lGAYgASgJUgpkcml2ZXJOYW1l');
+
+@$core.Deprecated('Use tripHistoryResponseDescriptor instead')
+const TripHistoryResponse$json = {
+  '1': 'TripHistoryResponse',
+  '2': [
+    {
+      '1': 'items',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.trip.TripHistoryItemPb',
+      '10': 'items'
+    },
+  ],
+};
+
+/// Descriptor for `TripHistoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List tripHistoryResponseDescriptor = $convert.base64Decode(
+    'ChNUcmlwSGlzdG9yeVJlc3BvbnNlEi0KBWl0ZW1zGAEgAygLMhcudHJpcC5UcmlwSGlzdG9yeU'
+    'l0ZW1QYlIFaXRlbXM=');

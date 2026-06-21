@@ -10,7 +10,7 @@ import (
 )
 
 func ConnectToDB(cfg *models.Database) (*pgxpool.Pool, error) {
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable&pool_max_conns=10",
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable&pool_max_conns=15",
 		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Name)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

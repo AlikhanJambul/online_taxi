@@ -51,6 +51,10 @@ class DriverNotifier extends StateNotifier<DriverState> {
   StreamSubscription<Position>? _locationSub;
   Timer? _locationTimer;
 
+  double? _lastSentLat;
+  double? _lastSentLng;
+  DateTime _lastSentAt = DateTime.fromMillisecondsSinceEpoch(0);
+
   DriverNotifier(this._repo) : super(const DriverState());
 
   Future<void> goOnline() async {
@@ -179,8 +183,17 @@ class DriverNotifier extends StateNotifier<DriverState> {
           return;
         }
       }
+      final now = DateTime.now();
+      final movedEnough = _lastSentLat == null ||
+          Geolocator.distanceBetween(_lastSentLat!, _lastSentLng!, lat, lng) > 20;
+      final heartbeat = now.difference(_lastSentAt).inSeconds >= 20;
+      if (!movedEnough && !heartbeat) return;
+
       debugPrint('[GPS] отправка точки: $lat, $lng, tripId=${state.activeTripId}');
       _repo.sendLocation(lat, lng, tripId: state.activeTripId ?? '');
+      _lastSentLat = lat;
+      _lastSentLng = lng;
+      _lastSentAt  = now;
     });
   }
 

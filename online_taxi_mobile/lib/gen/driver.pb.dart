@@ -171,8 +171,8 @@ class DriverProfileResponse extends $pb.GeneratedMessage {
     ..aOS(6, _omitFieldNames ? '' : 'carUrl')
     ..aE<DriverStatus>(7, _omitFieldNames ? '' : 'status',
         enumValues: DriverStatus.values)
-    ..a<$core.double>(8, _omitFieldNames ? '' : 'rating', $pb.PbFieldType.OD)
-    ..a<$core.int>(9, _omitFieldNames ? '' : 'totalTrips', $pb.PbFieldType.O3)
+    ..aD(8, _omitFieldNames ? '' : 'rating')
+    ..aI(9, _omitFieldNames ? '' : 'totalTrips')
     ..aInt64(10, _omitFieldNames ? '' : 'totalEarningsKzt')
     ..hasRequiredFields = false;
 
@@ -380,7 +380,7 @@ class TripHistoryItemPb extends $pb.GeneratedMessage {
       create()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'TripHistoryItem',
+      _omitMessageNames ? '' : 'TripHistoryItemPb',
       package: const $pb.PackageName(_omitMessageNames ? '' : 'driver'),
       createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
@@ -477,8 +477,7 @@ class TripHistoryResponse extends $pb.GeneratedMessage {
       _omitMessageNames ? '' : 'TripHistoryResponse',
       package: const $pb.PackageName(_omitMessageNames ? '' : 'driver'),
       createEmptyInstance: create)
-    ..pc<TripHistoryItemPb>(
-        1, _omitFieldNames ? '' : 'items', $pb.PbFieldType.PM,
+    ..pPM<TripHistoryItemPb>(1, _omitFieldNames ? '' : 'items',
         subBuilder: TripHistoryItemPb.create)
     ..hasRequiredFields = false;
 
@@ -502,7 +501,7 @@ class TripHistoryResponse extends $pb.GeneratedMessage {
   static TripHistoryResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<TripHistoryItemPb> get items => $_getList(0);
+  $pb.PbList<TripHistoryItemPb> get items => $_getList(0);
 }
 
 const $core.bool _omitFieldNames =

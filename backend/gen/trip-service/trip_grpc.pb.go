@@ -20,16 +20,18 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TripService_CreateTrip_FullMethodName    = "/trip.TripService/CreateTrip"
-	TripService_AcceptTrip_FullMethodName    = "/trip.TripService/AcceptTrip"
-	TripService_GetTrip_FullMethodName       = "/trip.TripService/GetTrip"
-	TripService_EstimateTrip_FullMethodName  = "/trip.TripService/EstimateTrip"
-	TripService_SendLocation_FullMethodName  = "/trip.TripService/SendLocation"
-	TripService_TrackTrip_FullMethodName     = "/trip.TripService/TrackTrip"
-	TripService_DriverArrived_FullMethodName = "/trip.TripService/DriverArrived"
-	TripService_StartTrip_FullMethodName     = "/trip.TripService/StartTrip"
-	TripService_CompleteTrip_FullMethodName  = "/trip.TripService/CompleteTrip"
-	TripService_CancelTrip_FullMethodName    = "/trip.TripService/CancelTrip"
+	TripService_CreateTrip_FullMethodName     = "/trip.TripService/CreateTrip"
+	TripService_AcceptTrip_FullMethodName     = "/trip.TripService/AcceptTrip"
+	TripService_GetTrip_FullMethodName        = "/trip.TripService/GetTrip"
+	TripService_EstimateTrip_FullMethodName   = "/trip.TripService/EstimateTrip"
+	TripService_SendLocation_FullMethodName   = "/trip.TripService/SendLocation"
+	TripService_TrackTrip_FullMethodName      = "/trip.TripService/TrackTrip"
+	TripService_DriverArrived_FullMethodName  = "/trip.TripService/DriverArrived"
+	TripService_StartTrip_FullMethodName      = "/trip.TripService/StartTrip"
+	TripService_CompleteTrip_FullMethodName   = "/trip.TripService/CompleteTrip"
+	TripService_CancelTrip_FullMethodName     = "/trip.TripService/CancelTrip"
+	TripService_SubmitReview_FullMethodName   = "/trip.TripService/SubmitReview"
+	TripService_GetTripHistory_FullMethodName = "/trip.TripService/GetTripHistory"
 )
 
 // TripServiceClient is the client API for TripService service.
@@ -58,6 +60,10 @@ type TripServiceClient interface {
 	CompleteTrip(ctx context.Context, in *TripIDRequest, opts ...grpc.CallOption) (*TripResponse, error)
 	// 10. Отмена поездки (и пассажир и водитель могут отменить)
 	CancelTrip(ctx context.Context, in *TripIDRequest, opts ...grpc.CallOption) (*TripResponse, error)
+	// 11. Пассажир оставляет отзыв (score передаётся в TripIDRequest.score)
+	SubmitReview(ctx context.Context, in *TripIDRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// 12. История поездок текущего пользователя
+	GetTripHistory(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*TripHistoryResponse, error)
 }
 
 type tripServiceClient struct {
@@ -180,6 +186,26 @@ func (c *tripServiceClient) CancelTrip(ctx context.Context, in *TripIDRequest, o
 	return out, nil
 }
 
+func (c *tripServiceClient) SubmitReview(ctx context.Context, in *TripIDRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, TripService_SubmitReview_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tripServiceClient) GetTripHistory(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*TripHistoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TripHistoryResponse)
+	err := c.cc.Invoke(ctx, TripService_GetTripHistory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TripServiceServer is the server API for TripService service.
 // All implementations must embed UnimplementedTripServiceServer
 // for forward compatibility.
@@ -206,9 +232,9 @@ type TripServiceServer interface {
 	CompleteTrip(context.Context, *TripIDRequest) (*TripResponse, error)
 	// 10. Отмена поездки (и пассажир и водитель могут отменить)
 	CancelTrip(context.Context, *TripIDRequest) (*TripResponse, error)
-	// 11. Пассажир оставляет отзыв (score в поле TripIDRequest.Score)
+	// 11. Пассажир оставляет отзыв (score передаётся в TripIDRequest.score)
 	SubmitReview(context.Context, *TripIDRequest) (*emptypb.Empty, error)
-	// 12. История поездок пассажира
+	// 12. История поездок текущего пользователя
 	GetTripHistory(context.Context, *emptypb.Empty) (*TripHistoryResponse, error)
 	mustEmbedUnimplementedTripServiceServer()
 }
@@ -439,8 +465,6 @@ func _TripService_CancelTrip_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-const TripService_SubmitReview_FullMethodName = "/trip.TripService/SubmitReview"
-
 func _TripService_SubmitReview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(TripIDRequest)
 	if err := dec(in); err != nil {
@@ -458,8 +482,6 @@ func _TripService_SubmitReview_Handler(srv interface{}, ctx context.Context, dec
 	}
 	return interceptor(ctx, in, info, handler)
 }
-
-const TripService_GetTripHistory_FullMethodName = "/trip.TripService/GetTripHistory"
 
 func _TripService_GetTripHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(emptypb.Empty)

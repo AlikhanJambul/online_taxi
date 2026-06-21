@@ -39,6 +39,7 @@ const CreateProfileRequest$json = {
     {'1': 'car_model', '3': 2, '4': 1, '5': 9, '10': 'carModel'},
     {'1': 'car_color', '3': 3, '4': 1, '5': 9, '10': 'carColor'},
     {'1': 'license_plate', '3': 4, '4': 1, '5': 9, '10': 'licensePlate'},
+    {'1': 'car_photo_url', '3': 5, '4': 1, '5': 9, '10': 'carPhotoUrl'},
   ],
 };
 
@@ -46,7 +47,8 @@ const CreateProfileRequest$json = {
 final $typed_data.Uint8List createProfileRequestDescriptor = $convert.base64Decode(
     'ChRDcmVhdGVQcm9maWxlUmVxdWVzdBIZCghjYXJfbWFrZRgBIAEoCVIHY2FyTWFrZRIbCgljYX'
     'JfbW9kZWwYAiABKAlSCGNhck1vZGVsEhsKCWNhcl9jb2xvchgDIAEoCVIIY2FyQ29sb3ISIwoN'
-    'bGljZW5zZV9wbGF0ZRgEIAEoCVIMbGljZW5zZVBsYXRl');
+    'bGljZW5zZV9wbGF0ZRgEIAEoCVIMbGljZW5zZVBsYXRlEiIKDWNhcl9waG90b191cmwYBSABKA'
+    'lSC2NhclBob3RvVXJs');
 
 @$core.Deprecated('Use driverProfileResponseDescriptor instead')
 const DriverProfileResponse$json = {
@@ -66,6 +68,15 @@ const DriverProfileResponse$json = {
       '6': '.driver.DriverStatus',
       '10': 'status'
     },
+    {'1': 'rating', '3': 8, '4': 1, '5': 1, '10': 'rating'},
+    {'1': 'total_trips', '3': 9, '4': 1, '5': 5, '10': 'totalTrips'},
+    {
+      '1': 'total_earnings_kzt',
+      '3': 10,
+      '4': 1,
+      '5': 3,
+      '10': 'totalEarningsKzt'
+    },
   ],
 };
 
@@ -75,7 +86,9 @@ final $typed_data.Uint8List driverProfileResponseDescriptor = $convert.base64Dec
     '9tYWtlGAIgASgJUgdjYXJNYWtlEhsKCWNhcl9tb2RlbBgDIAEoCVIIY2FyTW9kZWwSGwoJY2Fy'
     'X2NvbG9yGAQgASgJUghjYXJDb2xvchIjCg1saWNlbnNlX3BsYXRlGAUgASgJUgxsaWNlbnNlUG'
     'xhdGUSFwoHY2FyX3VybBgGIAEoCVIGY2FyVXJsEiwKBnN0YXR1cxgHIAEoDjIULmRyaXZlci5E'
-    'cml2ZXJTdGF0dXNSBnN0YXR1cw==');
+    'cml2ZXJTdGF0dXNSBnN0YXR1cxIWCgZyYXRpbmcYCCABKAFSBnJhdGluZxIfCgt0b3RhbF90cm'
+    'lwcxgJIAEoBVIKdG90YWxUcmlwcxIsChJ0b3RhbF9lYXJuaW5nc19renQYCiABKANSEHRvdGFs'
+    'RWFybmluZ3NLenQ=');
 
 @$core.Deprecated('Use getUploadURLResponseDescriptor instead')
 const GetUploadURLResponse$json = {
@@ -90,3 +103,42 @@ const GetUploadURLResponse$json = {
 final $typed_data.Uint8List getUploadURLResponseDescriptor = $convert.base64Decode(
     'ChRHZXRVcGxvYWRVUkxSZXNwb25zZRIdCgp1cGxvYWRfdXJsGAEgASgJUgl1cGxvYWRVcmwSGQ'
     'oIZmlsZV91cmwYAiABKAlSB2ZpbGVVcmw=');
+
+@$core.Deprecated('Use tripHistoryItemPbDescriptor instead')
+const TripHistoryItemPb$json = {
+  '1': 'TripHistoryItemPb',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'pickup_address', '3': 2, '4': 1, '5': 9, '10': 'pickupAddress'},
+    {'1': 'dest_address', '3': 3, '4': 1, '5': 9, '10': 'destAddress'},
+    {'1': 'price_kzt', '3': 4, '4': 1, '5': 3, '10': 'priceKzt'},
+    {'1': 'finished_at', '3': 5, '4': 1, '5': 9, '10': 'finishedAt'},
+  ],
+};
+
+/// Descriptor for `TripHistoryItemPb`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List tripHistoryItemPbDescriptor = $convert.base64Decode(
+    'ChFUcmlwSGlzdG9yeUl0ZW1QYhIOCgJpZBgBIAEoCVICaWQSJQoOcGlja3VwX2FkZHJlc3MYAi'
+    'ABKAlSDXBpY2t1cEFkZHJlc3MSIQoMZGVzdF9hZGRyZXNzGAMgASgJUgtkZXN0QWRkcmVzcxIb'
+    'CglwcmljZV9renQYBCABKANSCHByaWNlS3p0Eh8KC2ZpbmlzaGVkX2F0GAUgASgJUgpmaW5pc2'
+    'hlZEF0');
+
+@$core.Deprecated('Use tripHistoryResponseDescriptor instead')
+const TripHistoryResponse$json = {
+  '1': 'TripHistoryResponse',
+  '2': [
+    {
+      '1': 'items',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.driver.TripHistoryItemPb',
+      '10': 'items'
+    },
+  ],
+};
+
+/// Descriptor for `TripHistoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List tripHistoryResponseDescriptor = $convert.base64Decode(
+    'ChNUcmlwSGlzdG9yeVJlc3BvbnNlEi8KBWl0ZW1zGAEgAygLMhkuZHJpdmVyLlRyaXBIaXN0b3'
+    'J5SXRlbVBiUgVpdGVtcw==');

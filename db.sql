@@ -80,6 +80,8 @@ CREATE INDEX idx_users_phone ON users(phone);
 CREATE INDEX idx_trips_passenger_id ON trips(passenger_id);
 CREATE INDEX idx_trips_driver_id ON trips(driver_id);
 CREATE INDEX idx_trips_status ON trips(status);
+CREATE INDEX idx_trips_driver_status ON trips(driver_id, status);
+CREATE INDEX idx_reviews_target ON reviews(target_id);
 
 -- Seed admin user (password: admin123)
 INSERT INTO users (phone, email, password_hash, full_name, role)
@@ -90,7 +92,7 @@ VALUES ('+70000000000', 'admin@taxi.com', '$2a$10$ZH3ri5H7Xoc32eIqx.JlaOikFYY9Q4
 -- DROP TABLE IF EXISTS trips;
 -- DROP TABLE IF EXISTS driver_profiles;
 -- DROP TABLE IF EXISTS users;
---
+
 -- -- Удаляем типы данных
 -- DROP TYPE IF EXISTS trip_status;
 -- DROP TYPE IF EXISTS driver_status;

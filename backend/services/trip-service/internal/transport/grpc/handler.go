@@ -270,15 +270,18 @@ func (h *Handler) CancelTrip(ctx context.Context, req *pb.TripIDRequest) (*pb.Tr
 func (h *Handler) SubmitReview(ctx context.Context, req *pb.TripIDRequest) (*emptypb.Empty, error) {
 	passengerID, ok := ctx.Value("userID").(string)
 	if !ok || passengerID == "" {
+		h.logger.Error("SubmitReview: неавторизован, tripId=%s", req.TripId)
 		return nil, status.Error(codes.Unauthenticated, "неавторизован")
 	}
+	h.logger.Info("SubmitReview: tripId=%s passengerID=%s score=%d", req.TripId, passengerID, req.Score)
 	if req.Score < 1 || req.Score > 5 {
 		return nil, status.Error(codes.InvalidArgument, "оценка должна быть от 1 до 5")
 	}
 	if err := h.service.SubmitReview(ctx, req.TripId, passengerID, int(req.Score)); err != nil {
-		h.logger.Error("SubmitReview: %v", err)
+		h.logger.Error("SubmitReview: ошибка сохранения, tripId=%s: %v", req.TripId, err)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	h.logger.Info("SubmitReview: успешно сохранён отзыв, tripId=%s", req.TripId)
 	return &emptypb.Empty{}, nil
 }
 

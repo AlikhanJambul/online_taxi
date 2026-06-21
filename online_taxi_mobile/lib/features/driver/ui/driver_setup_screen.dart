@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../provider/driver_setup_provider.dart';
@@ -22,6 +23,16 @@ class _DriverSetupScreenState extends ConsumerState<DriverSetupScreen> {
 
   File? _avatarFile;
   File? _carFile;
+
+  @override
+  void initState() {
+    super.initState();
+    // Сбрасываем стейт предыдущей попытки (например, после отклонения),
+    // иначе stage "done" навсегда блокирует кнопку отправки.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(driverSetupProvider.notifier).reset();
+    });
+  }
 
   @override
   void dispose() {
@@ -76,6 +87,14 @@ class _DriverSetupScreenState extends ConsumerState<DriverSetupScreen> {
   Widget build(BuildContext context) {
     final setup     = ref.watch(driverSetupProvider);
     final isLoading = setup.stage != SetupStage.idle && setup.stage != SetupStage.error;
+
+    // Не полагаемся только на реактивный redirect роутера — переходим явно,
+    // как только профиль успешно создан/пересоздан.
+    ref.listen(driverSetupProvider, (prev, next) {
+      if (prev?.stage != SetupStage.done && next.stage == SetupStage.done) {
+        context.go('/driver/pending');
+      }
+    });
 
     return Scaffold(
       backgroundColor: AppTheme.bg,

@@ -79,6 +79,10 @@ Future<void> _uploadFile(String url, File file) async {
       state = const DriverSetupState();
     }
   }
+
+  void reset() {
+    state = const DriverSetupState();
+  }
 }
 
 final driverSetupProvider =

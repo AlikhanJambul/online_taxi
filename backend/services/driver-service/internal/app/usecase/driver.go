@@ -19,8 +19,8 @@ type Service interface {
 }
 
 type service struct {
-	repo             domain.Repository
-	fileStorage      minio.FileStorage
+	repo              domain.Repository
+	fileStorage       minio.FileStorage
 	minioExternalHost string
 }
 
@@ -88,6 +88,15 @@ func (s *service) GoOnline(ctx context.Context) error {
 	if !ok || userID == "" {
 		return domain.ErrEmptyCtx
 	}
+
+	driver, err := s.repo.GetDriver(ctx, userID)
+	if err != nil {
+		return err
+	}
+	if driver.Status != "APPROVED" {
+		return domain.ErrDriverNotApproved
+	}
+
 	return s.repo.StartShift(ctx, userID)
 }
 

@@ -35,8 +35,11 @@ type DriverServiceClient interface {
 	CreateProfile(ctx context.Context, in *CreateProfileRequest, opts ...grpc.CallOption) (*DriverProfileResponse, error)
 	GetProfile(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*DriverProfileResponse, error)
 	GetCarUploadURL(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetUploadURLResponse, error)
+	// Статистика водителя (рейтинг, кол-во поездок, заработок) — поля в DriverProfileResponse
 	GetStats(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*DriverProfileResponse, error)
+	// История поездок водителя
 	GetTripHistory(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*TripHistoryResponse, error)
+	// Водитель выходит на линию (начинает смену)
 	GoOnline(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
@@ -115,8 +118,11 @@ type DriverServiceServer interface {
 	CreateProfile(context.Context, *CreateProfileRequest) (*DriverProfileResponse, error)
 	GetProfile(context.Context, *emptypb.Empty) (*DriverProfileResponse, error)
 	GetCarUploadURL(context.Context, *emptypb.Empty) (*GetUploadURLResponse, error)
+	// Статистика водителя (рейтинг, кол-во поездок, заработок) — поля в DriverProfileResponse
 	GetStats(context.Context, *emptypb.Empty) (*DriverProfileResponse, error)
+	// История поездок водителя
 	GetTripHistory(context.Context, *emptypb.Empty) (*TripHistoryResponse, error)
+	// Водитель выходит на линию (начинает смену)
 	GoOnline(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 	mustEmbedUnimplementedDriverServiceServer()
 }

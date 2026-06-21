@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +6,16 @@ import 'package:yandex_mapkit/yandex_mapkit.dart';
 import '../provider/driver_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/map_markers.dart';
+
+double _distanceMeters(double lat1, double lng1, double lat2, double lng2) {
+  const r = 6371000.0;
+  final dLat = (lat2 - lat1) * pi / 180;
+  final dLng = (lng2 - lng1) * pi / 180;
+  final a = sin(dLat / 2) * sin(dLat / 2) +
+      cos(lat1 * pi / 180) * cos(lat2 * pi / 180) *
+      sin(dLng / 2) * sin(dLng / 2);
+  return r * 2 * atan2(sqrt(a), sqrt(1 - a));
+}
 
 class DriverActiveTripScreen extends ConsumerStatefulWidget {
   const DriverActiveTripScreen({super.key});
@@ -17,6 +28,9 @@ class _DriverActiveTripScreenState extends ConsumerState<DriverActiveTripScreen>
   YandexMapController? _mapCtrl;
   List<Point>? _route;
   DriverStatus? _routeForStatus;
+
+  double? _lastCameraLat, _lastCameraLng;
+  double? _lastRouteLat,  _lastRouteLng;
 
   Future<void> _calculateRoute({
     required Point from,
@@ -53,7 +67,10 @@ class _DriverActiveTripScreenState extends ConsumerState<DriverActiveTripScreen>
     // Центрируем карту когда приходят координаты
     ref.listen(driverProvider, (prev, next) {
       if (next.lat != null && next.lng != null &&
-          (next.lat != prev?.lat || next.lng != prev?.lng)) {
+          (_lastCameraLat == null ||
+           _distanceMeters(_lastCameraLat!, _lastCameraLng!, next.lat!, next.lng!) > 15)) {
+        _lastCameraLat = next.lat;
+        _lastCameraLng = next.lng;
         _mapCtrl?.moveCamera(
           CameraUpdate.newCameraPosition(CameraPosition(
             target: Point(latitude: next.lat!, longitude: next.lng!),
@@ -63,27 +80,39 @@ class _DriverActiveTripScreenState extends ConsumerState<DriverActiveTripScreen>
         );
       }
 
-      // Маршрут до пассажира — пока едем к месту посадки
+      // Маршрут до пассажира — при входе в статус и при каждых 100м движения
       if (next.status == DriverStatus.enRoute &&
-          next.lat != null && next.activeTrip != null &&
-          _routeForStatus != DriverStatus.enRoute) {
-        _calculateRoute(
-          from: Point(latitude: next.lat!, longitude: next.lng!),
-          to:   Point(latitude: next.activeTrip!.pickupLat, longitude: next.activeTrip!.pickupLng),
-          forStatus: DriverStatus.enRoute,
-        );
+          next.lat != null && next.activeTrip != null) {
+        final firstTime = _routeForStatus != DriverStatus.enRoute;
+        final movedEnough = _lastRouteLat != null &&
+            _distanceMeters(_lastRouteLat!, _lastRouteLng!, next.lat!, next.lng!) > 100;
+        if (firstTime || movedEnough) {
+          _lastRouteLat = next.lat;
+          _lastRouteLng = next.lng;
+          _calculateRoute(
+            from: Point(latitude: next.lat!, longitude: next.lng!),
+            to:   Point(latitude: next.activeTrip!.pickupLat, longitude: next.activeTrip!.pickupLng),
+            forStatus: DriverStatus.enRoute,
+          );
+        }
       }
 
       // Маршрут до точки назначения — после начала поездки
       if (next.status == DriverStatus.inTrip &&
-          prev?.status != DriverStatus.inTrip &&
           next.lat != null && next.activeTrip != null) {
-        setState(() => _route = null);
-        _calculateRoute(
-          from: Point(latitude: next.lat!, longitude: next.lng!),
-          to:   Point(latitude: next.activeTrip!.destLat, longitude: next.activeTrip!.destLng),
-          forStatus: DriverStatus.inTrip,
-        );
+        final firstTime = prev?.status != DriverStatus.inTrip;
+        final movedEnough = _lastRouteLat != null &&
+            _distanceMeters(_lastRouteLat!, _lastRouteLng!, next.lat!, next.lng!) > 100;
+        if (firstTime || movedEnough) {
+          if (firstTime) setState(() => _route = null);
+          _lastRouteLat = next.lat;
+          _lastRouteLng = next.lng;
+          _calculateRoute(
+            from: Point(latitude: next.lat!, longitude: next.lng!),
+            to:   Point(latitude: next.activeTrip!.destLat, longitude: next.activeTrip!.destLng),
+            forStatus: DriverStatus.inTrip,
+          );
+        }
       }
 
       // Когда поездка завершена — возвращаемся на главный экран

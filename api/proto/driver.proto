@@ -10,6 +10,15 @@ service DriverService {
   rpc CreateProfile (CreateProfileRequest) returns (DriverProfileResponse);
   rpc GetProfile (google.protobuf.Empty) returns (DriverProfileResponse);
   rpc GetCarUploadURL (google.protobuf.Empty) returns (GetUploadURLResponse);
+
+  // Статистика водителя (рейтинг, кол-во поездок, заработок) — поля в DriverProfileResponse
+  rpc GetStats (google.protobuf.Empty) returns (DriverProfileResponse);
+
+  // История поездок водителя
+  rpc GetTripHistory (google.protobuf.Empty) returns (TripHistoryResponse);
+
+  // Водитель выходит на линию (начинает смену)
+  rpc GoOnline (google.protobuf.Empty) returns (google.protobuf.Empty);
 }
 
 enum DriverStatus {
@@ -35,9 +44,24 @@ message DriverProfileResponse {
   string license_plate = 5;
   string car_url = 6;
   DriverStatus status = 7;
+  double rating = 8;              // используется только в GetStats
+  int32 total_trips = 9;          // используется только в GetStats
+  int64 total_earnings_kzt = 10;  // используется только в GetStats
 }
 
 message GetUploadURLResponse {
   string upload_url = 1;
   string file_url   = 2;
+}
+
+message TripHistoryItemPb {
+  string id = 1;
+  string pickup_address = 2;
+  string dest_address = 3;
+  int64 price_kzt = 4;
+  string finished_at = 5;
+}
+
+message TripHistoryResponse {
+  repeated TripHistoryItemPb items = 1;
 }

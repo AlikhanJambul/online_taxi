@@ -54,6 +54,7 @@ class DriverServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getCarUploadURL, request, options: options);
   }
 
+  /// Статистика водителя (рейтинг, кол-во поездок, заработок) — поля в DriverProfileResponse
   $grpc.ResponseFuture<$0.DriverProfileResponse> getStats(
     $1.Empty request, {
     $grpc.CallOptions? options,
@@ -61,6 +62,7 @@ class DriverServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getStats, request, options: options);
   }
 
+  /// История поездок водителя
   $grpc.ResponseFuture<$0.TripHistoryResponse> getTripHistory(
     $1.Empty request, {
     $grpc.CallOptions? options,
@@ -68,6 +70,7 @@ class DriverServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getTripHistory, request, options: options);
   }
 
+  /// Водитель выходит на линию (начинает смену)
   $grpc.ResponseFuture<$1.Empty> goOnline(
     $1.Empty request, {
     $grpc.CallOptions? options,
@@ -136,6 +139,27 @@ abstract class DriverServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $1.Empty.fromBuffer(value),
         ($0.GetUploadURLResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.Empty, $0.DriverProfileResponse>(
+        'GetStats',
+        getStats_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $1.Empty.fromBuffer(value),
+        ($0.DriverProfileResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.Empty, $0.TripHistoryResponse>(
+        'GetTripHistory',
+        getTripHistory_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $1.Empty.fromBuffer(value),
+        ($0.TripHistoryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.Empty, $1.Empty>(
+        'GoOnline',
+        goOnline_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $1.Empty.fromBuffer(value),
+        ($1.Empty value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.DriverProfileResponse> createProfile_Pre(
@@ -162,4 +186,27 @@ abstract class DriverServiceBase extends $grpc.Service {
 
   $async.Future<$0.GetUploadURLResponse> getCarUploadURL(
       $grpc.ServiceCall call, $1.Empty request);
+
+  $async.Future<$0.DriverProfileResponse> getStats_Pre(
+      $grpc.ServiceCall $call, $async.Future<$1.Empty> $request) async {
+    return getStats($call, await $request);
+  }
+
+  $async.Future<$0.DriverProfileResponse> getStats(
+      $grpc.ServiceCall call, $1.Empty request);
+
+  $async.Future<$0.TripHistoryResponse> getTripHistory_Pre(
+      $grpc.ServiceCall $call, $async.Future<$1.Empty> $request) async {
+    return getTripHistory($call, await $request);
+  }
+
+  $async.Future<$0.TripHistoryResponse> getTripHistory(
+      $grpc.ServiceCall call, $1.Empty request);
+
+  $async.Future<$1.Empty> goOnline_Pre(
+      $grpc.ServiceCall $call, $async.Future<$1.Empty> $request) async {
+    return goOnline($call, await $request);
+  }
+
+  $async.Future<$1.Empty> goOnline($grpc.ServiceCall call, $1.Empty request);
 }

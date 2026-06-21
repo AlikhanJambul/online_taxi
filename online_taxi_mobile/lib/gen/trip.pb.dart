@@ -809,7 +809,7 @@ class TripIDRequest extends $pb.GeneratedMessage {
       package: const $pb.PackageName(_omitMessageNames ? '' : 'trip'),
       createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'tripId')
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'score', $pb.PbFieldType.O3)
+    ..aI(2, _omitFieldNames ? '' : 'score')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -879,7 +879,7 @@ class TripHistoryItemPb extends $pb.GeneratedMessage {
       create()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'TripHistoryItem',
+      _omitMessageNames ? '' : 'TripHistoryItemPb',
       package: const $pb.PackageName(_omitMessageNames ? '' : 'trip'),
       createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
@@ -986,8 +986,7 @@ class TripHistoryResponse extends $pb.GeneratedMessage {
       _omitMessageNames ? '' : 'TripHistoryResponse',
       package: const $pb.PackageName(_omitMessageNames ? '' : 'trip'),
       createEmptyInstance: create)
-    ..pc<TripHistoryItemPb>(
-        1, _omitFieldNames ? '' : 'items', $pb.PbFieldType.PM,
+    ..pPM<TripHistoryItemPb>(1, _omitFieldNames ? '' : 'items',
         subBuilder: TripHistoryItemPb.create)
     ..hasRequiredFields = false;
 
@@ -1011,7 +1010,7 @@ class TripHistoryResponse extends $pb.GeneratedMessage {
   static TripHistoryResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<TripHistoryItemPb> get items => $_getList(0);
+  $pb.PbList<TripHistoryItemPb> get items => $_getList(0);
 }
 
 const $core.bool _omitFieldNames =

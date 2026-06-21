@@ -20,12 +20,13 @@ func (r *repository) SaveDriver(ctx context.Context, driver *domain.Driver) (str
 	query := `
 		INSERT INTO driver_profiles(user_id, car_make, car_model, car_color, license_plate, car_url) 
 		VALUES ($1, $2, $3, $4, $5, $6) 
-		ON CONFLICT (user_id) DO UPDATE 
-		SET 
+		ON CONFLICT (user_id) DO UPDATE
+		SET
 			car_make = EXCLUDED.car_make,
 			car_model = EXCLUDED.car_model,
 			car_color = EXCLUDED.car_color,
-			license_plate = EXCLUDED.license_plate
+			license_plate = EXCLUDED.license_plate,
+			status = CASE WHEN driver_profiles.status = 'REJECTED' THEN 'PENDING' ELSE driver_profiles.status END
 		RETURNING status;
 	`
 

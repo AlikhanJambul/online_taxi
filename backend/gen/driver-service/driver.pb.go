@@ -159,9 +159,9 @@ type DriverProfileResponse struct {
 	LicensePlate     string                 `protobuf:"bytes,5,opt,name=license_plate,json=licensePlate,proto3" json:"license_plate,omitempty"`
 	CarUrl           string                 `protobuf:"bytes,6,opt,name=car_url,json=carUrl,proto3" json:"car_url,omitempty"`
 	Status           DriverStatus           `protobuf:"varint,7,opt,name=status,proto3,enum=driver.DriverStatus" json:"status,omitempty"`
-	Rating           float64                `protobuf:"fixed64,8,opt,name=rating,proto3" json:"rating,omitempty"`
-	TotalTrips       int32                  `protobuf:"varint,9,opt,name=total_trips,json=totalTrips,proto3" json:"total_trips,omitempty"`
-	TotalEarningsKzt int64                  `protobuf:"varint,10,opt,name=total_earnings_kzt,json=totalEarningsKzt,proto3" json:"total_earnings_kzt,omitempty"`
+	Rating           float64                `protobuf:"fixed64,8,opt,name=rating,proto3" json:"rating,omitempty"`                                               // используется только в GetStats
+	TotalTrips       int32                  `protobuf:"varint,9,opt,name=total_trips,json=totalTrips,proto3" json:"total_trips,omitempty"`                      // используется только в GetStats
+	TotalEarningsKzt int64                  `protobuf:"varint,10,opt,name=total_earnings_kzt,json=totalEarningsKzt,proto3" json:"total_earnings_kzt,omitempty"` // используется только в GetStats
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -318,6 +318,126 @@ func (x *GetUploadURLResponse) GetFileUrl() string {
 	return ""
 }
 
+type TripHistoryItemPb struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	PickupAddress string                 `protobuf:"bytes,2,opt,name=pickup_address,json=pickupAddress,proto3" json:"pickup_address,omitempty"`
+	DestAddress   string                 `protobuf:"bytes,3,opt,name=dest_address,json=destAddress,proto3" json:"dest_address,omitempty"`
+	PriceKzt      int64                  `protobuf:"varint,4,opt,name=price_kzt,json=priceKzt,proto3" json:"price_kzt,omitempty"`
+	FinishedAt    string                 `protobuf:"bytes,5,opt,name=finished_at,json=finishedAt,proto3" json:"finished_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TripHistoryItemPb) Reset() {
+	*x = TripHistoryItemPb{}
+	mi := &file_driver_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TripHistoryItemPb) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TripHistoryItemPb) ProtoMessage() {}
+
+func (x *TripHistoryItemPb) ProtoReflect() protoreflect.Message {
+	mi := &file_driver_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TripHistoryItemPb.ProtoReflect.Descriptor instead.
+func (*TripHistoryItemPb) Descriptor() ([]byte, []int) {
+	return file_driver_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *TripHistoryItemPb) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *TripHistoryItemPb) GetPickupAddress() string {
+	if x != nil {
+		return x.PickupAddress
+	}
+	return ""
+}
+
+func (x *TripHistoryItemPb) GetDestAddress() string {
+	if x != nil {
+		return x.DestAddress
+	}
+	return ""
+}
+
+func (x *TripHistoryItemPb) GetPriceKzt() int64 {
+	if x != nil {
+		return x.PriceKzt
+	}
+	return 0
+}
+
+func (x *TripHistoryItemPb) GetFinishedAt() string {
+	if x != nil {
+		return x.FinishedAt
+	}
+	return ""
+}
+
+type TripHistoryResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*TripHistoryItemPb   `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TripHistoryResponse) Reset() {
+	*x = TripHistoryResponse{}
+	mi := &file_driver_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TripHistoryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TripHistoryResponse) ProtoMessage() {}
+
+func (x *TripHistoryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_driver_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TripHistoryResponse.ProtoReflect.Descriptor instead.
+func (*TripHistoryResponse) Descriptor() ([]byte, []int) {
+	return file_driver_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *TripHistoryResponse) GetItems() []*TripHistoryItemPb {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
 var File_driver_proto protoreflect.FileDescriptor
 
 const file_driver_proto_rawDesc = "" +
@@ -327,7 +447,7 @@ const file_driver_proto_rawDesc = "" +
 	"\bcar_make\x18\x01 \x01(\tR\acarMake\x12\x1b\n" +
 	"\tcar_model\x18\x02 \x01(\tR\bcarModel\x12\x1b\n" +
 	"\tcar_color\x18\x03 \x01(\tR\bcarColor\x12#\n" +
-	"\rlicense_plate\x18\x04 \x01(\tR\flicensePlate\x12\x22\n" +
+	"\rlicense_plate\x18\x04 \x01(\tR\flicensePlate\x12\"\n" +
 	"\rcar_photo_url\x18\x05 \x01(\tR\vcarPhotoUrl\"\xd8\x02\n" +
 	"\x15DriverProfileResponse\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x19\n" +
@@ -338,22 +458,36 @@ const file_driver_proto_rawDesc = "" +
 	"\acar_url\x18\x06 \x01(\tR\x06carUrl\x12,\n" +
 	"\x06status\x18\a \x01(\x0e2\x14.driver.DriverStatusR\x06status\x12\x16\n" +
 	"\x06rating\x18\b \x01(\x01R\x06rating\x12\x1f\n" +
-	"\vtotal_trips\x18\t \x01(\x05R\ntotalTrips\x12,\n" +
-	"\x12total_earnings_kzt\x18\n \x01(\x03R\x10totalEarningsKzt\"P\n" +
+	"\vtotal_trips\x18\t \x01(\x05R\n" +
+	"totalTrips\x12,\n" +
+	"\x12total_earnings_kzt\x18\n" +
+	" \x01(\x03R\x10totalEarningsKzt\"P\n" +
 	"\x14GetUploadURLResponse\x12\x1d\n" +
 	"\n" +
 	"upload_url\x18\x01 \x01(\tR\tuploadUrl\x12\x19\n" +
-	"\bfile_url\x18\x02 \x01(\tR\afileUrl*O\n" +
+	"\bfile_url\x18\x02 \x01(\tR\afileUrl\"\xab\x01\n" +
+	"\x11TripHistoryItemPb\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12%\n" +
+	"\x0epickup_address\x18\x02 \x01(\tR\rpickupAddress\x12!\n" +
+	"\fdest_address\x18\x03 \x01(\tR\vdestAddress\x12\x1b\n" +
+	"\tprice_kzt\x18\x04 \x01(\x03R\bpriceKzt\x12\x1f\n" +
+	"\vfinished_at\x18\x05 \x01(\tR\n" +
+	"finishedAt\"F\n" +
+	"\x13TripHistoryResponse\x12/\n" +
+	"\x05items\x18\x01 \x03(\v2\x19.driver.TripHistoryItemPbR\x05items*O\n" +
 	"\fDriverStatus\x12\x16\n" +
 	"\x12STATUS_UNSPECIFIED\x10\x00\x12\v\n" +
 	"\aPENDING\x10\x01\x12\f\n" +
 	"\bAPPROVED\x10\x02\x12\f\n" +
-	"\bREJECTED\x10\x032\xeb\x01\n" +
+	"\bREJECTED\x10\x032\xb1\x03\n" +
 	"\rDriverService\x12L\n" +
 	"\rCreateProfile\x12\x1c.driver.CreateProfileRequest\x1a\x1d.driver.DriverProfileResponse\x12C\n" +
 	"\n" +
 	"GetProfile\x12\x16.google.protobuf.Empty\x1a\x1d.driver.DriverProfileResponse\x12G\n" +
-	"\x0fGetCarUploadURL\x12\x16.google.protobuf.Empty\x1a\x1c.driver.GetUploadURLResponseB\x14Z\x12gen/driver-serviceb\x06proto3"
+	"\x0fGetCarUploadURL\x12\x16.google.protobuf.Empty\x1a\x1c.driver.GetUploadURLResponse\x12A\n" +
+	"\bGetStats\x12\x16.google.protobuf.Empty\x1a\x1d.driver.DriverProfileResponse\x12E\n" +
+	"\x0eGetTripHistory\x12\x16.google.protobuf.Empty\x1a\x1b.driver.TripHistoryResponse\x12:\n" +
+	"\bGoOnline\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.EmptyB\x14Z\x12gen/driver-serviceb\x06proto3"
 
 var (
 	file_driver_proto_rawDescOnce sync.Once
@@ -368,27 +502,36 @@ func file_driver_proto_rawDescGZIP() []byte {
 }
 
 var file_driver_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_driver_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_driver_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_driver_proto_goTypes = []any{
 	(DriverStatus)(0),             // 0: driver.DriverStatus
 	(*CreateProfileRequest)(nil),  // 1: driver.CreateProfileRequest
 	(*DriverProfileResponse)(nil), // 2: driver.DriverProfileResponse
 	(*GetUploadURLResponse)(nil),  // 3: driver.GetUploadURLResponse
-	(*emptypb.Empty)(nil),         // 4: google.protobuf.Empty
+	(*TripHistoryItemPb)(nil),     // 4: driver.TripHistoryItemPb
+	(*TripHistoryResponse)(nil),   // 5: driver.TripHistoryResponse
+	(*emptypb.Empty)(nil),         // 6: google.protobuf.Empty
 }
 var file_driver_proto_depIdxs = []int32{
 	0, // 0: driver.DriverProfileResponse.status:type_name -> driver.DriverStatus
-	1, // 1: driver.DriverService.CreateProfile:input_type -> driver.CreateProfileRequest
-	4, // 2: driver.DriverService.GetProfile:input_type -> google.protobuf.Empty
-	4, // 3: driver.DriverService.GetCarUploadURL:input_type -> google.protobuf.Empty
-	2, // 4: driver.DriverService.CreateProfile:output_type -> driver.DriverProfileResponse
-	2, // 5: driver.DriverService.GetProfile:output_type -> driver.DriverProfileResponse
-	3, // 6: driver.DriverService.GetCarUploadURL:output_type -> driver.GetUploadURLResponse
-	4, // [4:7] is the sub-list for method output_type
-	1, // [1:4] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	4, // 1: driver.TripHistoryResponse.items:type_name -> driver.TripHistoryItemPb
+	1, // 2: driver.DriverService.CreateProfile:input_type -> driver.CreateProfileRequest
+	6, // 3: driver.DriverService.GetProfile:input_type -> google.protobuf.Empty
+	6, // 4: driver.DriverService.GetCarUploadURL:input_type -> google.protobuf.Empty
+	6, // 5: driver.DriverService.GetStats:input_type -> google.protobuf.Empty
+	6, // 6: driver.DriverService.GetTripHistory:input_type -> google.protobuf.Empty
+	6, // 7: driver.DriverService.GoOnline:input_type -> google.protobuf.Empty
+	2, // 8: driver.DriverService.CreateProfile:output_type -> driver.DriverProfileResponse
+	2, // 9: driver.DriverService.GetProfile:output_type -> driver.DriverProfileResponse
+	3, // 10: driver.DriverService.GetCarUploadURL:output_type -> driver.GetUploadURLResponse
+	2, // 11: driver.DriverService.GetStats:output_type -> driver.DriverProfileResponse
+	5, // 12: driver.DriverService.GetTripHistory:output_type -> driver.TripHistoryResponse
+	6, // 13: driver.DriverService.GoOnline:output_type -> google.protobuf.Empty
+	8, // [8:14] is the sub-list for method output_type
+	2, // [2:8] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_driver_proto_init() }
@@ -402,7 +545,7 @@ func file_driver_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_driver_proto_rawDesc), len(file_driver_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   3,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"online_taxi/services/auth-service/internal/domain"
 )
@@ -30,6 +31,15 @@ func (r *repository) SaveUser(ctx context.Context, data *domain.User, token stri
 
 	_, err = tx.Exec(ctx, queryUser, userID, data.Phone, data.Email, data.Password, data.FullName, data.Role, "")
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			switch pgErr.ConstraintName {
+			case "users_email_key":
+				return domain.ErrEmailTaken
+			case "users_phone_key":
+				return domain.ErrPhoneTaken
+			}
+		}
 		return err
 	}
 

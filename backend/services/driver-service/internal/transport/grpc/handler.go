@@ -84,6 +84,12 @@ func (h *Handler) GetStats(ctx context.Context, req *emptypb.Empty) (*pb.DriverP
 
 func (h *Handler) GoOnline(ctx context.Context, req *emptypb.Empty) (*emptypb.Empty, error) {
 	if err := h.service.GoOnline(ctx); err != nil {
+		if errors.Is(err, domain.ErrDriverNotApproved) {
+			return nil, status.Error(codes.PermissionDenied, err.Error())
+		}
+		if errors.Is(err, domain.ErrDriverNotFound) {
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
 		h.logger.Error("GoOnline: %v", err)
 		return nil, status.Error(codes.Internal, domain.ErrInternal.Error())
 	}

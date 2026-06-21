@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:grpc/grpc.dart';
 import '../data/auth_repository.dart';
 
 export '../data/auth_repository.dart' show UserRole, DriverSetupStatus;
@@ -154,6 +155,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   String _msg(Object e) {
+    if (e is GrpcError && e.code == StatusCode.alreadyExists) {
+      return e.message ?? 'Пользователь уже существует';
+    }
     final s = e.toString();
     if (s.contains('UNAUTHENTICATED')) return 'Неверный email или пароль';
     if (s.contains('ALREADY_EXISTS'))  return 'Пользователь уже существует';

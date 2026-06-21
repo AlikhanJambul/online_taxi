@@ -32,6 +32,9 @@ func (h *Handler) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.Au
 
 	res, err := h.service.CreateUser(ctx, dto)
 	if err != nil {
+		if errors.Is(err, domain.ErrEmailTaken) || errors.Is(err, domain.ErrPhoneTaken) {
+			return nil, status.Error(codes.AlreadyExists, err.Error())
+		}
 		h.logger.Error("ошибка при регистрации: %v", err)
 		return nil, status.Error(codes.Internal, domain.ErrInternal.Error())
 	}

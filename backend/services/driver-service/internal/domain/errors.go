@@ -3,8 +3,9 @@ package domain
 import "errors"
 
 var (
-	ErrEmptyCtx       = errors.New("userID не найден в контексте или имеет неверный тип")
-	ErrInternal       = errors.New("что-то пошло не так, попробуйте позже")
-	ErrDriverNotFound = errors.New("профиль водителя не найден")
-	ErrUnauth         = errors.New("пользователь не авторизован")
+	ErrEmptyCtx          = errors.New("userID не найден в контексте или имеет неверный тип")
+	ErrInternal          = errors.New("что-то пошло не так, попробуйте позже")
+	ErrDriverNotFound    = errors.New("профиль водителя не найден")
+	ErrUnauth            = errors.New("пользователь не авторизован")
+	ErrDriverNotApproved = errors.New("заявка водителя ещё не одобрена администратором")
 )

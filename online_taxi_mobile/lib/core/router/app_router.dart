@@ -17,12 +17,25 @@ import '../../features/driver/ui/active_trip_screen.dart';
 import '../../features/driver/ui/driver_setup_screen.dart';
 import '../../features/driver/ui/pending_approval_screen.dart';
 
+// GoRouter пересоздаёт весь Navigator при каждой новой инстанции, поэтому
+// нельзя пересобирать его на каждое изменение authProvider (ref.watch) —
+// это рвёт навигацию (залипающие кнопки, потерянные тапы). Вместо этого
+// создаём GoRouter один раз и обновляем redirect через refreshListenable.
+class _AuthRefreshNotifier extends ChangeNotifier {
+  _AuthRefreshNotifier(Ref ref) {
+    ref.listen(authProvider, (_, __) => notifyListeners());
+  }
+}
+
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final auth = ref.watch(authProvider);
+  final refreshNotifier = _AuthRefreshNotifier(ref);
+  ref.onDispose(refreshNotifier.dispose);
 
   return GoRouter(
-    initialLocation: _resolveInitial(auth),
+    initialLocation: _resolveInitial(ref.read(authProvider)),
+    refreshListenable: refreshNotifier,
     redirect: (context, state) {
+      final auth        = ref.read(authProvider);
       final isAuth      = auth.status == AuthStatus.authenticated;
       final isInitial   = auth.status == AuthStatus.initial;
       final loc         = state.matchedLocation;
@@ -98,8 +111,15 @@ String? _driverRedirect(DriverSetupStatus setup, String loc) {
   if (setup == DriverSetupStatus.needsSetup && !loc.startsWith('/driver/setup')) {
     return '/driver/setup';
   }
-  if ((setup == DriverSetupStatus.pending || setup == DriverSetupStatus.rejected) &&
-      !loc.startsWith('/driver/pending')) {
+  // pending — всегда на экран ожидания, даже если только что отправили
+  // форму повторной заявки и физически ещё находимся на /driver/setup
+  if (setup == DriverSetupStatus.pending && !loc.startsWith('/driver/pending')) {
+    return '/driver/pending';
+  }
+  // rejected — тоже на экран ожидания, но даём остаться на /driver/setup,
+  // если пользователь как раз заполняет повторную заявку
+  if (setup == DriverSetupStatus.rejected &&
+      !loc.startsWith('/driver/pending') && !loc.startsWith('/driver/setup')) {
     return '/driver/pending';
   }
   if (setup == DriverSetupStatus.approved &&

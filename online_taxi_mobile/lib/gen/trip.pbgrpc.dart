@@ -118,7 +118,7 @@ class TripServiceClient extends $grpc.Client {
     return $createUnaryCall(_$cancelTrip, request, options: options);
   }
 
-  /// 11. Пассажир оставляет отзыв (score в поле TripIDRequest)
+  /// 11. Пассажир оставляет отзыв (score передаётся в TripIDRequest.score)
   $grpc.ResponseFuture<$1.Empty> submitReview(
     $0.TripIDRequest request, {
     $grpc.CallOptions? options,
@@ -126,7 +126,7 @@ class TripServiceClient extends $grpc.Client {
     return $createUnaryCall(_$submitReview, request, options: options);
   }
 
-  /// 12. История поездок пассажира
+  /// 12. История поездок текущего пользователя
   $grpc.ResponseFuture<$0.TripHistoryResponse> getTripHistory(
     $1.Empty request, {
     $grpc.CallOptions? options,
@@ -186,11 +186,10 @@ class TripServiceClient extends $grpc.Client {
           '/trip.TripService/CancelTrip',
           ($0.TripIDRequest value) => value.writeToBuffer(),
           $0.TripResponse.fromBuffer);
-  static final _$submitReview =
-      $grpc.ClientMethod<$0.TripIDRequest, $1.Empty>(
-          '/trip.TripService/SubmitReview',
-          ($0.TripIDRequest value) => value.writeToBuffer(),
-          $1.Empty.fromBuffer);
+  static final _$submitReview = $grpc.ClientMethod<$0.TripIDRequest, $1.Empty>(
+      '/trip.TripService/SubmitReview',
+      ($0.TripIDRequest value) => value.writeToBuffer(),
+      $1.Empty.fromBuffer);
   static final _$getTripHistory =
       $grpc.ClientMethod<$1.Empty, $0.TripHistoryResponse>(
           '/trip.TripService/GetTripHistory',
@@ -273,6 +272,20 @@ abstract class TripServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.TripIDRequest.fromBuffer(value),
         ($0.TripResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.TripIDRequest, $1.Empty>(
+        'SubmitReview',
+        submitReview_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.TripIDRequest.fromBuffer(value),
+        ($1.Empty value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.Empty, $0.TripHistoryResponse>(
+        'GetTripHistory',
+        getTripHistory_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $1.Empty.fromBuffer(value),
+        ($0.TripHistoryResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.TripResponse> createTrip_Pre($grpc.ServiceCall $call,
@@ -349,4 +362,20 @@ abstract class TripServiceBase extends $grpc.Service {
 
   $async.Future<$0.TripResponse> cancelTrip(
       $grpc.ServiceCall call, $0.TripIDRequest request);
+
+  $async.Future<$1.Empty> submitReview_Pre(
+      $grpc.ServiceCall $call, $async.Future<$0.TripIDRequest> $request) async {
+    return submitReview($call, await $request);
+  }
+
+  $async.Future<$1.Empty> submitReview(
+      $grpc.ServiceCall call, $0.TripIDRequest request);
+
+  $async.Future<$0.TripHistoryResponse> getTripHistory_Pre(
+      $grpc.ServiceCall $call, $async.Future<$1.Empty> $request) async {
+    return getTripHistory($call, await $request);
+  }
+
+  $async.Future<$0.TripHistoryResponse> getTripHistory(
+      $grpc.ServiceCall call, $1.Empty request);
 }

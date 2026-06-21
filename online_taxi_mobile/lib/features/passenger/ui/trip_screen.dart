@@ -114,7 +114,7 @@ class _PassengerTripScreenState extends ConsumerState<PassengerTripScreen> {
           next.driverLat != null &&
           next.pickupLat != null &&
           (_lastRouteLat == null ||
-           _distanceMeters(_lastRouteLat!, _lastRouteLng!, next.driverLat!, next.driverLng!) > 30)) {
+           _distanceMeters(_lastRouteLat!, _lastRouteLng!, next.driverLat!, next.driverLng!) > 100)) {
         _lastRouteLat = next.driverLat;
         _lastRouteLng = next.driverLng;
         _calculateRoute(

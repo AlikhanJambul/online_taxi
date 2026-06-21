@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../gen/driver.pbenum.dart';
 import '../data/driver_repository.dart';
@@ -37,6 +38,7 @@ class _PendingApprovalScreenState extends ConsumerState<PendingApprovalScreen> {
 
       if (profile.status == DriverStatus.APPROVED) {
         ref.read(authProvider.notifier).setDriverSetupStatus(DriverSetupStatus.approved);
+        if (mounted) context.go('/driver');
       } else if (profile.status == DriverStatus.REJECTED) {
         ref.read(authProvider.notifier).setDriverSetupStatus(DriverSetupStatus.rejected);
       }
@@ -108,6 +110,27 @@ class _PendingApprovalScreenState extends ConsumerState<PendingApprovalScreen> {
                 Text(
                   'Ожидаем одобрения...',
                   style: GoogleFonts.inter(color: AppTheme.textSecondary, fontSize: 13),
+                ),
+              ],
+              if (isRejected) ...[
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      ref.read(authProvider.notifier).setDriverSetupStatus(DriverSetupStatus.needsSetup);
+                      context.go('/driver/setup');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    child: Text(
+                      'Подать заявку повторно',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: Colors.black, fontSize: 15),
+                    ),
+                  ),
                 ),
               ],
               const Spacer(),

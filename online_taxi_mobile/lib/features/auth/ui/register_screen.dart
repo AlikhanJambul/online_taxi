@@ -12,8 +12,9 @@ class RegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
-  final _formKey   = GlobalKey<FormState>();
-  final _nameCtrl  = TextEditingController();
+  final _formKey       = GlobalKey<FormState>();
+  final _firstNameCtrl = TextEditingController();
+  final _lastNameCtrl  = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _passCtrl  = TextEditingController();
@@ -39,7 +40,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   void dispose() {
-    _nameCtrl.dispose();
+    _firstNameCtrl.dispose();
+    _lastNameCtrl.dispose();
     _phoneCtrl.removeListener(_enforcePhonePrefix);
     _phoneCtrl.dispose();
     _emailCtrl.dispose();
@@ -47,15 +49,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     super.dispose();
   }
 
-  String? _validateName(String? v) {
-    if (v == null || v.trim().isEmpty) return 'Введите полное имя';
+  String? _validateNamePart(String? v, String fieldLabel) {
+    if (v == null || v.trim().isEmpty) return 'Введите $fieldLabel';
     final trimmed = v.trim();
-    if (trimmed.length < 3) return 'Минимум 3 символа';
-    if (!RegExp(r"^[a-zA-Zа-яА-ЯёЁ\s\-]+$").hasMatch(trimmed)) {
-      return 'Только буквы, пробелы и дефис';
+    if (trimmed.length < 2) return 'Минимум 2 символа';
+    if (!RegExp(r"^[a-zA-Zа-яА-ЯёЁ\-]+$").hasMatch(trimmed)) {
+      return 'Только буквы и дефис';
     }
-    final parts = trimmed.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
-    if (parts.length < 2) return 'Введите имя и фамилию';
     return null;
   }
 
@@ -84,10 +84,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   void _register() {
     if (!_formKey.currentState!.validate()) return;
+    final fullName = '${_firstNameCtrl.text.trim()} ${_lastNameCtrl.text.trim()}';
     ref.read(authProvider.notifier).register(
       phone: _phoneCtrl.text.trim(),
       password: _passCtrl.text,
-      fullName: _nameCtrl.text.trim(),
+      fullName: fullName,
       email: _emailCtrl.text.trim(),
       role: _role,
     );
@@ -149,16 +150,32 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ]),
                 const SizedBox(height: 24),
 
-                TextFormField(
-                  controller: _nameCtrl,
-                  validator: _validateName,
-                  textCapitalization: TextCapitalization.words,
-                  style: const TextStyle(color: AppTheme.textPrimary),
-                  decoration: const InputDecoration(
-                    hintText: 'Полное имя',
-                    prefixIcon: Icon(Icons.badge_outlined, color: AppTheme.textSecondary, size: 20),
+                Row(children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _firstNameCtrl,
+                      validator: (v) => _validateNamePart(v, 'имя'),
+                      textCapitalization: TextCapitalization.words,
+                      style: const TextStyle(color: AppTheme.textPrimary),
+                      decoration: const InputDecoration(
+                        hintText: 'Имя',
+                        prefixIcon: Icon(Icons.badge_outlined, color: AppTheme.textSecondary, size: 20),
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _lastNameCtrl,
+                      validator: (v) => _validateNamePart(v, 'фамилию'),
+                      textCapitalization: TextCapitalization.words,
+                      style: const TextStyle(color: AppTheme.textPrimary),
+                      decoration: const InputDecoration(
+                        hintText: 'Фамилия',
+                      ),
+                    ),
+                  ),
+                ]),
                 const SizedBox(height: 12),
 
                 TextFormField(
